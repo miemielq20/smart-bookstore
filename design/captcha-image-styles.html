@@ -1,0 +1,530 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图片验证码 · 设计方案集</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "PingFang SC","Microsoft YaHei","Inter",sans-serif;
+    background: #f5f2ed;
+    color: #1e293b;
+    padding: 48px 24px;
+  }
+
+  .page-header {
+    max-width: 1000px;
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .page-header p {
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .grid {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.04);
+    border: 1px solid #e8e0d4;
+  }
+  .card:hover { box-shadow: 0 4px 28px rgba(0,0,0,.07); }
+
+  .card-label {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .captcha-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .captcha-img {
+    flex-shrink: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity .15s;
+    display: block;
+  }
+  .captcha-img:hover { opacity: .85; }
+
+  .refresh-btn {
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .15s;
+    color: #64748b;
+  }
+  .refresh-btn:hover { border-color: #94a3b8; color: #1e293b; background: #f1f5f9; }
+  .refresh-btn svg { width:16px; height:16px; }
+
+  .captcha-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    background: #f8fafc;
+    transition: none;
+  }
+  .captcha-input:focus { border-color: #94a3b8; }
+
+  .card-footer {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .verify-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    background: #e2e8f0;
+    color: #64748b;
+  }
+
+  .edge-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+
+  @media (max-width:600px) {
+    body { padding: 24px 12px; }
+    .grid { gap: 16px; }
+    .card { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🖼️ 图片验证码 · 设计方案集</h1>
+  <p>7 种不同视觉风格的图片验证码，点击图片可刷新</p>
+</div>
+
+<div class="grid">
+
+  <!-- 1. 经典噪点 -->
+  <div class="card">
+    <div class="card-label">Style 1 · 基础</div>
+    <div class="card-title">经典噪点 <span class="edge-tag">最常见</span></div>
+    <div class="card-desc">随机角度 + 大小写字母 + 密集噪点 + 干扰线，浏览器验证码的标准形态</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawNoise(this)"></canvas>
+      <button class="refresh-btn" onclick="drawNoise(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+  <!-- 2. 纯数字蓝调 -->
+  <div class="card">
+    <div class="card-label">Style 2 · 数字</div>
+    <div class="card-title">纯数字蓝调 <span class="edge-tag">友好</span></div>
+    <div class="card-desc">纯数字 4 位，浅蓝渐变底 + 白色波浪干扰，阅读友好、误识率低</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawNumeric(this)"></canvas>
+      <button class="refresh-btn" onclick="drawNumeric(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+  <!-- 3. 中文汉字 -->
+  <div class="card">
+    <div class="card-label">Style 3 · 汉字</div>
+    <div class="card-title">中文汉字 <span class="edge-tag">国内特色</span></div>
+    <div class="card-desc">随机中文词语 + 墨色质感字体 + 水墨晕染背景，防识别能力强</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawChinese(this)"></canvas>
+      <button class="refresh-btn" onclick="drawChinese(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+  <!-- 4. 算术题 -->
+  <div class="card">
+    <div class="card-label">Style 4 · 算术</div>
+    <div class="card-title">算术验证 <span class="edge-tag">无文字</span></div>
+    <div class="card-desc">随机加减算术题，不必打字只需算结果，适合移动端，无障碍友好</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawMath(this)"></canvas>
+      <button class="refresh-btn" onclick="drawMath(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="计算结果">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+  <!-- 5. 极简纯色 -->
+  <div class="card">
+    <div class="card-label">Style 5 · 极简</div>
+    <div class="card-title">极简纯色 <span class="edge-tag">北欧风</span></div>
+    <div class="card-desc">纯色背景 + 单一字体颜色 + 极轻度变形，风格干净，适合高端设计</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawMinimal(this)"></canvas>
+      <button class="refresh-btn" onclick="drawMinimal(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+  <!-- 6. 深色磨砂 -->
+  <div class="card" style="background:linear-gradient(135deg,#0c1328,#1a1a3e);border-color:rgba(255,255,255,.06);">
+    <div class="card-label" style="color:rgba(255,255,255,.3);">Style 6 · 深色</div>
+    <div class="card-title" style="color:#f1f5f9;">深色磨砂 <span class="edge-tag" style="background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);">暗黑模式</span></div>
+    <div class="card-desc" style="color:rgba(255,255,255,.45);">深色半透明底 + 紫色发光字 + 光晕点，适配暗色模式的后台系统</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawDark(this)"></canvas>
+      <button class="refresh-btn" onclick="drawDark(this.previousElementSibling)" title="换一张" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(255,255,255,.35);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(255,255,255,.5);">
+      <button class="verify-btn" style="background:rgba(124,58,237,.15);color:#a78bfa;">验证</button>
+    </div>
+  </div>
+
+  <!-- 7. 动态彩带 -->
+  <div class="card">
+    <div class="card-label">Style 7 · 彩色</div>
+    <div class="card-title">彩虹动态 <span class="edge-tag">视觉丰富</span></div>
+    <div class="card-desc">多色彩过渡背景 + 彩色文字 + 彩色干扰弧线，视觉冲击力强</div>
+    <div class="captcha-row">
+      <canvas class="captcha-img" width="130" height="44" onclick="drawColorful(this)"></canvas>
+      <button class="refresh-btn" onclick="drawColorful(this.previousElementSibling)" title="换一张">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+    <div class="card-footer">
+      <input class="captcha-input" placeholder="输入验证码">
+      <button class="verify-btn">验证</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ======== 通用工具 ========
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+// ======== 1. 经典噪点 ========
+function drawNoise(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect(0, 0, w, h);
+
+  // 干扰线 x3
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(rand(0, w), rand(0, h));
+    ctx.lineTo(rand(0, w), rand(0, h));
+    ctx.strokeStyle = `rgba(${rand(80,200)},${rand(80,200)},${rand(80,200)},.4)`;
+    ctx.lineWidth = rand(1, 2);
+    ctx.stroke();
+  }
+
+  // 噪点
+  for (let i = 0; i < 120; i++) {
+    ctx.fillStyle = `rgba(${rand(0,150)},${rand(0,150)},${rand(0,150)},${Math.random()*.4})`;
+    ctx.fillRect(rand(0, w), rand(0, h), rand(1, 2), rand(1, 2));
+  }
+
+  // 字符
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const code = Array.from({length:4},()=>chars[rand(0,chars.length-1)]).join('');
+  const colors = ['#2563eb','#dc2626','#ca8a04','#059669','#7c3aed'];
+  let x = 10;
+  code.split('').forEach((ch, i) => {
+    ctx.save();
+    ctx.translate(x + rand(4, 10), 28 + rand(-4, 4));
+    ctx.rotate((rand(-25, 25)) * Math.PI / 180);
+    ctx.font = `600 ${22 + rand(-2, 2)}px Inter,sans-serif`;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    x += 22 + rand(2, 6);
+  });
+  c._answer = code;
+}
+
+// ======== 2. 纯数字蓝调 ========
+function drawNumeric(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#eff6ff');
+  grad.addColorStop(1, '#dbeafe');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // 波浪干扰
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(59,130,246,.15)';
+  ctx.lineWidth = 2;
+  for (let l = 0; l < 2; l++) {
+    ctx.beginPath();
+    for (let x = 0; x < w; x += 2) {
+      const y = 22 + Math.sin((x + l * 30) * 0.08) * 10 + Math.sin((x + l * 10) * 0.15) * 5;
+      l === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  const code = Array.from({length:4},()=>rand(0,9).toString()).join('');
+  let x = 10;
+  code.split('').forEach((ch, i) => {
+    ctx.save();
+    ctx.translate(x + rand(4, 8), 28 + rand(-3, 3));
+    ctx.rotate((rand(-15, 15)) * Math.PI / 180);
+    ctx.font = `700 ${24 + rand(-1, 1)}px Inter,sans-serif`;
+    ctx.fillStyle = `hsl(${210 + i * 15}, 80%, 45%)`;
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    x += 24 + rand(2, 4);
+  });
+  c._answer = code;
+}
+
+// ======== 3. 中文汉字 ========
+function drawChinese(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.fillStyle = '#f5f0e8';
+  ctx.fillRect(0, 0, w, h);
+
+  // 水墨晕染
+  for (let i = 0; i < 8; i++) {
+    const grd = ctx.createRadialGradient(rand(0,w), rand(0,h), 0, rand(0,w), rand(0,h), rand(20,50));
+    grd.addColorStop(0, `rgba(0,0,0,.04)`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const words = ['书城','阅读','知识','图书','智慧','文学','经典','文章','书香','文库'];
+  const code = words[rand(0, words.length - 1)];
+  ctx.save();
+  ctx.translate(w/2, 28);
+  ctx.rotate((rand(-8, 8)) * Math.PI / 180);
+  ctx.font = `600 22px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.fillStyle = '#2c2416';
+  ctx.textAlign = 'center';
+  ctx.fillText(code, 0, 0);
+  // 墨迹阴影
+  ctx.fillStyle = 'rgba(0,0,0,.08)';
+  ctx.fillText(code, 1, 1);
+  ctx.restore();
+  c._answer = code;
+}
+
+// ======== 4. 算术题 ========
+function drawMath(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.fillStyle = '#fefce8';
+  ctx.fillRect(0, 0, w, h);
+
+  // 点状干扰
+  for (let i = 0; i < 40; i++) {
+    ctx.fillStyle = `rgba(202,138,4,.12)`;
+    ctx.beginPath();
+    ctx.arc(rand(0,w), rand(0,h), rand(1,3), 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  const a = rand(10, 50), b = rand(1, 20);
+  const op = Math.random() > 0.5 ? '+' : '−';
+  const answer = op === '+' ? a + b : a - b;
+  const expr = `${a} ${op} ${b} = ?`;
+
+  ctx.save();
+  ctx.translate(w/2, 28);
+  ctx.font = `700 20px Inter,sans-serif`;
+  ctx.fillStyle = '#ca8a04';
+  ctx.textAlign = 'center';
+  ctx.fillText(expr, 0, 0);
+  ctx.restore();
+  c._answer = String(answer);
+}
+
+// ======== 5. 极简纯色 ========
+function drawMinimal(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, w, h);
+
+  // 一条极细水平线
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0,0,0,.04)';
+  ctx.lineWidth = 1;
+  ctx.moveTo(0, h/2);
+  ctx.lineTo(w, h/2);
+  ctx.stroke();
+
+  const chars = 'ABCDEFGHKMNPRSTWXYZ346789';
+  const code = Array.from({length:4},()=>chars[rand(0,chars.length-1)]).join('');
+  let x = 8;
+  code.split('').forEach((ch, i) => {
+    ctx.save();
+    ctx.translate(x + rand(6, 12), 28 + rand(-2, 2));
+    ctx.rotate((rand(-10, 10)) * Math.PI / 180);
+    ctx.font = `400 ${20 + rand(-1, 1)}px Inter,sans-serif`;
+    ctx.fillStyle = '#1e293b';
+    ctx.globalAlpha = .7;
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    x += 22 + rand(2, 4);
+  });
+  c._answer = code;
+}
+
+// ======== 6. 深色磨砂 ========
+function drawDark(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.fillStyle = '#1a1830';
+  ctx.fillRect(0, 0, w, h);
+
+  // 发光点
+  for (let i = 0; i < 15; i++) {
+    const grd = ctx.createRadialGradient(rand(0,w), rand(0,h), 0, rand(0,w), rand(0,h), rand(8,25));
+    grd.addColorStop(0, 'rgba(124,58,237,.10)');
+    grd.addColorStop(1, 'rgba(124,58,237,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ346789';
+  const code = Array.from({length:4},()=>chars[rand(0,chars.length-1)]).join('');
+  let x = 8;
+  code.split('').forEach((ch, i) => {
+    ctx.save();
+    ctx.translate(x + rand(6, 12), 28 + rand(-2, 2));
+    ctx.rotate((rand(-12, 12)) * Math.PI / 180);
+    ctx.shadowColor = 'rgba(168,85,247,.4)';
+    ctx.shadowBlur = 8;
+    ctx.font = `700 ${22 + rand(-1, 1)}px Inter,sans-serif`;
+    ctx.fillStyle = '#a78bfa';
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    x += 22 + rand(2, 4);
+  });
+  c._answer = code;
+}
+
+// ======== 7. 彩虹动态 ========
+function drawColorful(c) {
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#fef3c7');
+  grad.addColorStop(0.3, '#fce7f3');
+  grad.addColorStop(0.6, '#e0e7ff');
+  grad.addColorStop(1, '#d1fae5');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // 彩色弧线
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(rand(20,w-20), rand(10,h-10), rand(20,50), 0, Math.PI * 2 * Math.random());
+    ctx.strokeStyle = [`rgba(239,68,68,.15)`,`rgba(59,130,246,.12)`,`rgba(16,185,129,.15)`][i];
+    ctx.lineWidth = rand(2, 4);
+    ctx.stroke();
+  }
+
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const code = Array.from({length:4},()=>chars[rand(0,chars.length-1)]).join('');
+  const colors = ['#dc2626','#2563eb','#059669','#ca8a04','#7c3aed','#db2777'];
+  let x = 10;
+  code.split('').forEach((ch, i) => {
+    ctx.save();
+    ctx.translate(x + rand(4, 8), 28 + rand(-3, 3));
+    ctx.rotate((rand(-18, 18)) * Math.PI / 180);
+    ctx.font = `700 ${22 + rand(-2, 2)}px Inter,sans-serif`;
+    ctx.fillStyle = colors[(i * 2 + rand(0,1)) % colors.length];
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    x += 22 + rand(2, 5);
+  });
+  c._answer = code;
+}
+
+// ======== 初始化渲染 ========
+document.querySelectorAll('.captcha-img').forEach(canvas => {
+  const id = Array.from(document.querySelectorAll('.captcha-img')).indexOf(canvas);
+  const fns = [drawNoise, drawNumeric, drawChinese, drawMath, drawMinimal, drawDark, drawColorful];
+  fns[id](canvas);
+});
+</script>
+</body>
+</html>

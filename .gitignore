@@ -1,0 +1,39 @@
+# logs
+logs/
+*.log
+
+# dependencies
+node_modules/
+
+# build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+.eslintcache
+.turbo
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sw?
+*.suo
+*.sln
+
+# system
+.DS_Store
+Thumbs.db
+
+# test coverage
+/coverage
+__screenshots__/
+/cypress/videos/
+/cypress/screenshots/
+
+# other
+*.timestamp-*-*.mjs

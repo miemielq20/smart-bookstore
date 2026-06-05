@@ -1,0 +1,538 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/// ==================== 用户表 ====================
+model User {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  username    String    @unique(map: "uk_username") @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  nickname    String?   @db.VarChar(50)
+  avatar      String?   @db.VarChar(500)
+  phone       String?   @db.VarChar(20)
+  email       String?   @db.VarChar(100)
+  groupId     Int?      @map("group_id") @db.UnsignedInt
+  status      Int       @default(1) @db.TinyInt
+  lastLoginAt DateTime? @map("last_login_at") @db.DateTime(0)
+  lastLoginIp String?   @map("last_login_ip") @db.VarChar(45)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt   DateTime? @map("deleted_at") @db.DateTime(0)
+
+  @@index([deletedAt], map: "idx_deleted_at")
+  @@index([groupId], map: "idx_group_id")
+  @@index([status], map: "idx_status")
+  @@map("users")
+}
+
+/// ==================== 权限组表 ====================
+model PermissionGroup {
+  id          Int      @id @default(autoincrement()) @db.UnsignedInt
+  name        String   @unique(map: "uk_name") @db.VarChar(50)
+  description String?  @db.VarChar(200)
+  status      Int      @default(1) @db.TinyInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@map("permission_groups")
+}
+
+/// ==================== 菜单表（v3 — 菜单按钮分离） ====================
+model Menu {
+  id             Int      @id @default(autoincrement()) @db.UnsignedInt
+  parentId       Int?     @default(0) @map("parent_id") @db.UnsignedInt
+  name           String   @db.VarChar(50)
+  path           String?  @db.VarChar(200)
+  component      String?  @db.VarChar(200)
+  icon           String?  @db.VarChar(50)
+  sort           Int      @default(0)
+  visible        Int      @default(1) @db.TinyInt
+  status         Int      @default(1) @db.TinyInt
+  permissionCode String   @map("permission_code") @db.VarChar(100)
+  createdAt      DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([parentId], map: "idx_parent_id")
+  @@index([permissionCode], map: "idx_permission_code")
+  @@map("menus")
+}
+
+/// ==================== 菜单按钮权限表（v3 新增） ====================
+model MenuButton {
+  id             Int      @id @default(autoincrement()) @db.UnsignedInt
+  menuId         Int      @map("menu_id") @db.UnsignedInt
+  name           String   @db.VarChar(50)
+  permissionCode String   @map("permission_code") @db.VarChar(100)
+  description    String?  @db.VarChar(200)
+  status         Int      @default(1) @db.TinyInt
+  createdAt      DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@unique([menuId, permissionCode], map: "uk_menu_permission")
+  @@index([menuId], map: "idx_menu_id")
+  @@map("menu_buttons")
+}
+
+/// ==================== 权限组菜单关联表 ====================
+model GroupMenu {
+  id      Int @id @default(autoincrement()) @db.UnsignedInt
+  groupId Int @map("group_id") @db.UnsignedInt
+  menuId  Int @map("menu_id") @db.UnsignedInt
+
+  @@unique([groupId, menuId], map: "uk_group_menu")
+  @@map("group_menus")
+}
+
+/// ==================== 权限组按钮关联表（v3 新增） ====================
+model GroupButton {
+  id       Int @id @default(autoincrement()) @db.UnsignedInt
+  groupId  Int @map("group_id") @db.UnsignedInt
+  buttonId Int @map("button_id") @db.UnsignedInt
+
+  @@unique([groupId, buttonId], map: "uk_group_button")
+  @@map("group_buttons")
+}
+
+/// ==================== 分类表 ====================
+model Category {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  name      String   @db.VarChar(50)
+  parentId  Int?     @default(0) @map("parent_id") @db.UnsignedInt
+  sort      Int      @default(0)
+  icon      String?  @db.VarChar(255)
+  status    Int      @default(1) @db.TinyInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([parentId], map: "idx_parent_id")
+  @@index([sort], map: "idx_sort")
+  @@map("categories")
+}
+
+/// ==================== 标签表 ====================
+model Tag {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  name      String   @unique(map: "uk_name") @db.VarChar(30)
+  type      TagsType @default(THEME)
+  sort      Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([type], map: "idx_type")
+  @@map("tags")
+}
+
+/// ==================== 图书标签关联表 ====================
+model BookTagRelation {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  bookId    BigInt   @map("book_id") @db.UnsignedBigInt
+  tagId     Int      @map("tag_id") @db.UnsignedInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@unique([bookId, tagId], map: "uk_book_tag")
+  @@index([tagId], map: "idx_tag_id")
+  @@map("book_tag_relations")
+}
+
+/// ==================== 图书表 ====================
+model Book {
+  id            BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  title         String        @db.VarChar(200)
+  subtitle      String?       @db.VarChar(200)
+  author        String        @db.VarChar(100)
+  translator    String?       @db.VarChar(100)
+  publisher     String?       @db.VarChar(100)
+  isbn          String?       @db.VarChar(20)
+  coverUrl      String?       @map("cover_url") @db.VarChar(500)
+  price         Decimal       @default(0.00) @db.Decimal(10, 2)
+  originalPrice Decimal?      @map("original_price") @db.Decimal(10, 2)
+  categoryId    Int?          @map("category_id") @db.UnsignedInt
+  description   String?       @db.Text
+  pageCount     Int?          @map("page_count") @db.UnsignedInt
+  language      String?       @default("中文") @db.VarChar(20)
+  publishDate   DateTime?     @map("publish_date") @db.Date
+  binding       Binding? @default(dbgenerated("平装"))
+  format        String?       @db.VarChar(20)
+  weight        Int?
+  stock         Int           @default(0)
+  salesCount    Int           @default(0) @map("sales_count")
+  viewCount     Int           @default(0) @map("view_count")
+  rating        Decimal?      @db.Decimal(2, 1)
+  status        Int           @default(1) @db.TinyInt
+  createdBy     BigInt?       @map("created_by") @db.UnsignedBigInt
+  createdAt     DateTime      @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime      @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt     DateTime?     @map("deleted_at") @db.DateTime(0)
+
+  @@index([author], map: "idx_author")
+  @@index([categoryId], map: "idx_category_id")
+  @@index([deletedAt], map: "idx_deleted_at")
+  @@index([isbn], map: "idx_isbn")
+  @@index([publishDate], map: "idx_publish_date")
+  @@index([salesCount], map: "idx_sales_count")
+  @@index([status], map: "idx_status")
+  @@index([title], map: "idx_title")
+  @@map("books")
+  @@fulltext([title, description], map: "ft_title_desc")
+}
+
+/// ==================== 首页横幅表 ====================
+model Banner {
+  id        Int             @id @default(autoincrement()) @db.UnsignedInt
+  title     String          @db.VarChar(100)
+  imageUrl  String          @map("image_url") @db.VarChar(500)
+  linkUrl   String?         @map("link_url") @db.VarChar(500)
+  linkType  BannersLinkType @default(BOOK)
+  targetId  BigInt?         @map("target_id") @db.UnsignedBigInt
+  sort      Int             @default(0)
+  status    Int             @default(1) @db.TinyInt
+  createdBy BigInt?         @map("created_by") @db.UnsignedBigInt
+  createdAt DateTime        @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime        @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([sort], map: "idx_sort")
+  @@index([status], map: "idx_status")
+  @@map("banners")
+}
+
+/// ==================== 图书评价表 ====================
+model BookReview {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  bookId    BigInt   @map("book_id") @db.UnsignedBigInt
+  userId    BigInt   @map("user_id") @db.UnsignedBigInt
+  orderId   BigInt?  @map("order_id") @db.UnsignedBigInt
+  rating    Int      @db.UnsignedTinyInt
+  content   String?  @db.VarChar(1000)
+  status    Int      @default(1) @db.TinyInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@unique([userId, bookId, orderId], map: "uk_user_book_order")
+  @@index([bookId], map: "idx_book_id")
+  @@index([createdAt], map: "idx_created_at")
+  @@index([rating], map: "idx_rating")
+  @@map("book_reviews")
+}
+
+/// ==================== 用户收货地址表 ====================
+model UserAddress {
+  id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  userId        BigInt    @map("user_id") @db.UnsignedBigInt
+  receiverName  String    @map("receiver_name") @db.VarChar(50)
+  receiverPhone String    @map("receiver_phone") @db.VarChar(20)
+  province      String    @db.VarChar(50)
+  city          String    @db.VarChar(50)
+  district      String    @db.VarChar(50)
+  detail        String    @db.VarChar(200)
+  isDefault     Int       @default(0) @map("is_default") @db.TinyInt
+  createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt     DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt     DateTime? @map("deleted_at") @db.DateTime(0)
+
+  @@index([userId, isDefault], map: "idx_user_default")
+  @@map("user_addresses")
+}
+
+/// ==================== 浏览记录表 ====================
+model BrowseHistory {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @map("user_id") @db.UnsignedBigInt
+  bookId    BigInt   @map("book_id") @db.UnsignedBigInt
+  duration  Int?     @default(0) @db.UnsignedInt
+  source    String?  @db.VarChar(50)
+  browsedAt DateTime @default(now()) @map("browsed_at") @db.DateTime(0)
+
+  @@index([bookId], map: "idx_book_id")
+  @@index([userId, browsedAt], map: "idx_user_browsed")
+  @@map("browse_history")
+}
+
+/// ==================== 购物车表 ====================
+model CartItem {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @map("user_id") @db.UnsignedBigInt
+  bookId    BigInt   @map("book_id") @db.UnsignedBigInt
+  quantity  Int      @default(1)
+  selected  Int      @default(1) @db.TinyInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@unique([userId, bookId], map: "uk_user_book")
+  @@index([userId], map: "idx_user_id")
+  @@map("cart_items")
+}
+
+/// ==================== 订单表 ====================
+model Order {
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  userId          BigInt      @map("user_id") @db.UnsignedBigInt
+  orderNo         String      @unique(map: "uk_order_no") @map("order_no") @db.VarChar(32)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  trackingNo      String?     @map("tracking_no") @db.VarChar(50)
+  addressSnapshot String      @map("address_snapshot") @db.LongText
+  remark          String?     @db.VarChar(500)
+  expireAt        DateTime?   @map("expire_at") @db.DateTime(0)
+  paidAt          DateTime?   @map("paid_at") @db.DateTime(0)
+  shippedAt       DateTime?   @map("shipped_at") @db.DateTime(0)
+  completedAt     DateTime?   @map("completed_at") @db.DateTime(0)
+  cancelledAt     DateTime?   @map("cancelled_at") @db.DateTime(0)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt       DateTime    @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([createdAt], map: "idx_created_at")
+  @@index([status], map: "idx_status")
+  @@index([userId], map: "idx_user_id")
+  @@index([userId, status], map: "idx_user_status")
+  @@map("orders")
+}
+
+/// ==================== 订单明细表 ====================
+model OrderItem {
+  id           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  orderId      BigInt   @map("order_id") @db.UnsignedBigInt
+  bookId       BigInt   @map("book_id") @db.UnsignedBigInt
+  bookSnapshot String   @map("book_snapshot") @db.LongText
+  price        Decimal  @db.Decimal(10, 2)
+  quantity     Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([bookId], map: "idx_book_id")
+  @@index([orderId], map: "idx_order_id")
+  @@map("order_items")
+}
+
+/// ==================== 支付记录表 ====================
+model PaymentRecord {
+  id          BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  orderId     BigInt               @map("order_id") @db.UnsignedBigInt
+  paymentNo   String               @unique(map: "uk_payment_no") @map("payment_no") @db.VarChar(64)
+  amount      Decimal              @db.Decimal(10, 2)
+  method      PaymentRecordsMethod @default(MOCK)
+  status      PaymentStatus        @default(PENDING)
+  paidAt      DateTime?            @map("paid_at") @db.DateTime(0)
+  rawResponse String?              @map("raw_response") @db.LongText
+  createdAt   DateTime             @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime             @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([orderId], map: "idx_order_id")
+  @@index([status], map: "idx_status")
+  @@map("payment_records")
+}
+
+/// ==================== 退款记录表 ====================
+model RefundRecord {
+  id          BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  orderId     BigInt       @map("order_id") @db.UnsignedBigInt
+  refundNo    String       @unique(map: "uk_refund_no") @map("refund_no") @db.VarChar(64)
+  amount      Decimal      @db.Decimal(10, 2)
+  reason      String       @db.VarChar(500)
+  status      RefundStatus @default(PENDING)
+  handlerId   BigInt?      @map("handler_id") @db.UnsignedBigInt
+  handlerNote String?      @map("handler_note") @db.VarChar(500)
+  handledAt   DateTime?    @map("handled_at") @db.DateTime(0)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime     @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([orderId], map: "idx_order_id")
+  @@index([status], map: "idx_status")
+  @@map("refund_records")
+}
+
+/// ==================== 库存变动日志表 ====================
+model InventoryLog {
+  id           BigInt                  @id @default(autoincrement()) @db.UnsignedBigInt
+  bookId       BigInt                  @map("book_id") @db.UnsignedBigInt
+  changeType   ChangeType
+  changeAmount Int                     @map("change_amount")
+  beforeStock  Int                     @map("before_stock")
+  afterStock   Int                     @map("after_stock")
+  relatedId    BigInt?                 @map("related_id") @db.UnsignedBigInt
+  remark       String?                 @db.VarChar(200)
+  operatorId   BigInt?                 @map("operator_id") @db.UnsignedBigInt
+  createdAt    DateTime                @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([bookId], map: "idx_book_id")
+  @@index([changeType], map: "idx_change_type")
+  @@index([createdAt], map: "idx_created_at")
+  @@map("inventory_logs")
+}
+
+/// ==================== 操作审计日志表 ====================
+model AuditLog {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId     BigInt?  @map("user_id") @db.UnsignedBigInt
+  username   String?  @db.VarChar(50)
+  action     String   @db.VarChar(50)
+  targetType String?  @map("target_type") @db.VarChar(50)
+  targetId   BigInt?  @map("target_id") @db.UnsignedBigInt
+  detail     String?  @db.LongText
+  ip         String?  @db.VarChar(45)
+  userAgent  String?  @map("user_agent") @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([action], map: "idx_action")
+  @@index([createdAt], map: "idx_created_at")
+  @@index([targetType, targetId], map: "idx_target")
+  @@index([userId], map: "idx_user_id")
+  @@map("audit_logs")
+}
+
+/// ==================== 登录日志表 ====================
+model LoginLog {
+  id         BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  userId     BigInt?         @map("user_id") @db.UnsignedBigInt
+  username   String          @db.VarChar(50)
+  status     LoginLogsStatus
+  failReason String?         @map("fail_reason") @db.VarChar(100)
+  ip         String?         @db.VarChar(45)
+  userAgent  String?         @map("user_agent") @db.VarChar(500)
+  createdAt  DateTime        @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([createdAt], map: "idx_created_at")
+  @@index([userId], map: "idx_user_id")
+  @@index([username], map: "idx_username")
+  @@map("login_logs")
+}
+
+/// ==================== 收藏表 ====================
+model Favorite {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @map("user_id") @db.UnsignedBigInt
+  bookId    BigInt   @map("book_id") @db.UnsignedBigInt
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@unique([userId, bookId], map: "uk_user_book")
+  @@index([bookId], map: "idx_book_id")
+  @@index([userId], map: "idx_user_id")
+  @@map("favorites")
+}
+
+/// ==================== AI 对话会话表 ====================
+model AiSession {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  userId       BigInt    @map("user_id") @db.UnsignedBigInt
+  title        String?   @default("新对话") @db.VarChar(200)
+  status       Int       @default(1) @db.TinyInt
+  messageCount Int       @default(0) @map("message_count")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt    DateTime? @map("deleted_at") @db.DateTime(0)
+
+  @@index([userId], map: "idx_user_id")
+  @@index([userId, updatedAt], map: "idx_user_updated")
+  @@map("ai_sessions")
+}
+
+/// ==================== AI 对话消息表 ====================
+model AiMessage {
+  id         BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  sessionId  BigInt         @map("session_id") @db.UnsignedBigInt
+  role       AiMessagesRole
+  content    String         @db.Text
+  tokenCount Int?           @map("token_count") @db.UnsignedInt
+  bookIds    String?        @map("book_ids") @db.LongText
+  createdAt  DateTime       @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@index([createdAt], map: "idx_created_at")
+  @@index([sessionId], map: "idx_session_id")
+  @@map("ai_messages")
+}
+
+/// ==================== 系统配置表 ====================
+model SystemConfig {
+  id        Int               @id @default(autoincrement()) @db.UnsignedInt
+  key       String            @unique(map: "uk_key") @db.VarChar(100)
+  value     String            @db.Text
+  type      SystemConfigsType @default(STRING)
+  group     String            @default("default") @db.VarChar(50)
+  label     String?           @db.VarChar(100)
+  updatedBy BigInt?           @map("updated_by") @db.UnsignedBigInt
+  createdAt DateTime          @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt DateTime          @default(now()) @map("updated_at") @db.DateTime(0)
+
+  @@index([group], map: "idx_group")
+  @@map("system_configs")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+  REFUNDING
+  REFUNDED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CLOSED
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum AiMessagesRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum TagsType {
+  GENRE
+  THEME
+  AUDIENCE
+  FORMAT
+}
+
+enum LoginLogsStatus {
+  SUCCESS
+  FAIL
+}
+
+enum SystemConfigsType {
+  STRING
+  NUMBER
+  JSON
+  BOOLEAN
+}
+
+enum BannersLinkType {
+  BOOK
+  CATEGORY
+  URL
+  NONE
+}
+
+enum PaymentRecordsMethod {
+  WECHAT
+  ALIPAY
+  MOCK
+}
+
+enum Binding {
+  PAPERBACK // 平装
+  HARDCOVER // 精装
+  SEWN // 线装
+  OTHER // 其他
+}
+
+enum ChangeType {
+  STOCK_IN // 入库
+  STOCK_OUT // 出库
+  ORDER_LOCK // 下单锁定
+  CANCEL_RELEASE // 取消释放
+  RETURN // 退货回仓
+  ADJUST // 盘点调整
+  MANUAL // 手动修改
+}
