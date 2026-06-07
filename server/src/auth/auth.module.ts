@@ -4,10 +4,12 @@ import { PassportModule } from '@nestjs/passport'
 import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtStrategy } from './jwt.strategy'
+import { CaptchaModule } from '../captcha/captcha.module'
 
 @Module({
   imports: [
     PassportModule,
+    CaptchaModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'sm_sys_jwt_secret_key_2026',
       signOptions: { expiresIn: '7d' },

@@ -113,7 +113,7 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import { ElMessage } from 'element-plus'
   import CaptchaImage from '@/components/CaptchaImage.vue'
-import { loginApi, getCodeApi } from '@/api/api'
+  import { loginApi, getCodeApi } from '@/api/api'
   import type { LoginParams } from '@/type/api.request'
 
   const router = useRouter()
@@ -135,12 +135,14 @@ import { loginApi, getCodeApi } from '@/api/api'
   }
 
   const captchaUrl = ref('')
+  const captchaId = ref('')
 
   // 刷新验证码
   async function refreshCaptcha() {
     const res = await getCodeApi()
-    captchaUrl.value = res.img
-    //console.log(res)
+    captchaUrl.value = res.data.img
+    captchaId.value= res.data.uuid
+  
   }
 
   // 登录
@@ -155,11 +157,12 @@ import { loginApi, getCodeApi } from '@/api/api'
         username: form.username,
         password: form.password,
         captcha: form.captcha,
+        captchaId: captchaId.value,
       }
       const res = await loginApi(data)
-      localStorage.setItem('token', res.accessToken)
+      localStorage.setItem('token', res.data.accessToken)
       ElMessage.success('登录成功')
-      router.replace('/dashboard')
+      router.replace('/')
     } catch {
       /* 错误已在拦截器中统一 toast，此处仅重置 loading */
     } finally {

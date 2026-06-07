@@ -21,8 +21,10 @@ async function main() {
   /* 密码加密 */
   const scryptAsync = promisify(scrypt)
   const salt = 'sm_sys_salt_2026'
-  const adminBuf = await scryptAsync('admin123', salt, 64) as Buffer
+  const adminBuf = await scryptAsync('123456', salt, 64) as Buffer
   const adminPwd = adminBuf.toString('hex')
+  const serviceBuf = await scryptAsync('123456', salt, 64) as Buffer
+  const servicePwd = serviceBuf.toString('hex')
 
   /* 权限组（先建，user 外键依赖） */
   const group1 = await prisma.permissionGroup.upsert({
@@ -49,7 +51,20 @@ async function main() {
       groupId: 1,
     },
   })
-  console.log('✓ 管理员用户: admin / admin123')
+
+  const service = await prisma.user.upsert({
+    where: { username: 'service' },
+    update: { password: servicePwd },
+    create: {
+      username: 'service',
+      password: servicePwd,
+      nickname: '客服',
+      phone: '13800000001',
+      groupId: 2,
+    },
+  })
+  console.log('✓ 管理员用户: admin / 123456 ')
+  console.log('✓ 客服用户: service / 123456')
 
   /* 一级菜单 */
   const menus = [

@@ -5,9 +5,12 @@ import { PrismaModule } from './prisma/prisma.module'
 import { AuthModule } from './auth/auth.module'
 import { RedisModule } from './redis/redis.module'
 import { CaptchaModule } from './captcha/captcha.module'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [PrismaModule, AuthModule, RedisModule, CaptchaModule],
+  imports: [PrismaModule, AuthModule, RedisModule, CaptchaModule,ConfigModule.forRoot({
+    isGlobal: true,
+  })],
   controllers: [AppController],
   providers: [AppService],
 })

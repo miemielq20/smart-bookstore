@@ -1,0 +1,305 @@
+﻿
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>智慧书城 · 后台管理</title>
+<style>
+:root{--sidebar-w:240px;--header-h:60px;--green-900:#1a3a28;--green-800:#2d5a3d;--green-700:#3a6b4a;--green-600:#4a7d5a;--green-500:#5a8f6a;--green-light:rgba(45,90,61,.06);--bg-page:#f2ede4;--bg-card:#faf7f1;--bg-white:#ffffff;--text-primary:#2c2416;--text-secondary:#7a6e5e;--text-muted:#b0a494;--border:#e5dcc8;--border-light:#efe9dc;--radius:10px;--radius-lg:14px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei","Inter",sans-serif;background:var(--bg-page);color:var(--text-primary);min-height:100vh;display:flex;overflow:hidden}
+.sidebar{width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,var(--green-800),var(--green-700) 60%,var(--green-600));position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:100;overflow:hidden;background-image:repeating-linear-gradient(87deg,transparent,transparent 3px,rgba(0,0,0,.02) 3px,rgba(0,0,0,.02) 4px),repeating-linear-gradient(93deg,transparent,transparent 15px,rgba(0,0,0,.015) 15px,rgba(0,0,0,.015) 16px),linear-gradient(180deg,var(--green-800),var(--green-700) 60%,var(--green-600))}
+.sidebar::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.04) 0%,transparent 60%);pointer-events:none}
+.sidebar-logo{padding:22px 20px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06);position:relative;z-index:1}
+.sidebar-logo .icon{width:34px;height:34px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sidebar-logo .name{font-size:16px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1px}
+.sidebar-logo .version{font-size:9px;color:rgba(255,255,255,.3);margin-left:auto;letter-spacing:1px}
+.sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;position:relative;z-index:1}
+.sidebar-nav::-webkit-scrollbar{width:3px}
+.sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.menu-group{margin-bottom:4px}
+.menu-group-title{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;cursor:pointer;user-select:none;transition:color .15s;font-weight:500}
+.menu-group-title:hover{color:rgba(255,255,255,.5)}
+.menu-group-title .arrow{margin-left:auto;transition:transform .2s;opacity:.5}
+.menu-group-title .arrow.open{transform:rotate(90deg)}
+.menu-items{overflow:hidden;transition:max-height .25s ease}
+.menu-items.collapsed{max-height:0!important}
+.menu-item{display:flex;align-items:center;gap:10px;padding:9px 12px 9px 16px;font-size:13px;color:rgba(255,255,255,.6);text-decoration:none;border-radius:8px;transition:all .15s;cursor:pointer;margin-bottom:1px;position:relative}
+.menu-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.menu-item.active{color:#fff;background:rgba(255,255,255,.1);font-weight:500}
+.menu-item.active::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;background:#fbbf24;border-radius:2px}
+.menu-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0}
+.menu-item.active .dot{opacity:1;background:#fbbf24}
+.menu-item .icon{flex-shrink:0;font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:14px 14px 16px;border-top:1px solid rgba(255,255,255,.06);position:relative;z-index:1}
+.sidebar-user{display:flex;align-items:center;gap:10px}
+.sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.7)}
+.sidebar-user .info{flex:1;min-width:0}
+.sidebar-user .info .uname{font-size:13px;font-weight:500;color:rgba(255,255,255,.8)}
+.sidebar-user .info .urole{font-size:11px;color:rgba(255,255,255,.35)}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.header{height:var(--header-h);background:var(--bg-card);border-bottom:1px solid var(--border-light);display:flex;align-items:center;padding:0 28px;gap:16px;flex-shrink:0}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px}
+.breadcrumb a{color:var(--text-secondary);text-decoration:none}
+.breadcrumb a:hover{color:var(--green-800)}
+.breadcrumb .sep{color:var(--text-muted)}
+.breadcrumb .current{color:var(--text-primary);font-weight:500}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.header-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border-light);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);transition:all .15s;position:relative}
+.header-btn:hover{border-color:var(--text-muted);color:var(--text-primary)}
+.header-btn .badge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#dc2626;border-radius:50%}
+.content{flex:1;padding:24px 28px;overflow-y:auto}
+.page-section{display:none}
+.page-section.active{display:block}
+.page-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-title h2{font-size:20px;font-weight:700;color:var(--text-primary)}
+.page-title .sub{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.page-actions{display:flex;gap:10px}
+.btn{padding:8px 18px;border-radius:8px;border:none;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-primary{background:var(--green-800);color:#fff}
+.btn-primary:hover{background:var(--green-900)}
+.btn-outline{background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)}
+.btn-outline:hover{border-color:var(--text-muted);color:var(--text-primary)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius);padding:18px 20px}
+.stat-card .label{font-size:12px;color:var(--text-secondary);margin-bottom:6px}
+.stat-card .value{font-size:26px;font-weight:700;color:var(--green-800)}
+.stat-card .change{font-size:11px;margin-top:4px}
+.stat-card .change.up{color:#059669}
+.stat-card .change.down{color:#dc2626}
+.chart-section{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.card-panel{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:20px 22px}
+.card-panel .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-panel .card-header h3{font-size:15px;font-weight:600;color:var(--text-primary)}
+.card-panel .card-header .tag{font-size:11px;color:var(--text-muted);background:var(--border-light);padding:2px 10px;border-radius:4px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:8px}
+.chart-bars .bar{flex:1;border-radius:4px 4px 0 0;min-height:8px;background:linear-gradient(to top,var(--green-500),var(--green-600))}
+.chart-bars .bar-label{text-align:center;font-size:10px;color:var(--text-muted);margin-top:6px}
+.pie-legend{display:flex;flex-direction:column;gap:10px}
+.pie-legend .row{display:flex;align-items:center;gap:10px;font-size:13px}
+.pie-legend .row .color{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.pie-legend .row .label{color:var(--text-secondary);flex:1}
+.pie-legend .row .val{font-weight:600;color:var(--text-primary)}
+.table-wrap{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-lg);overflow:hidden;margin-top:16px}
+.table-wrap table{width:100%;border-collapse:collapse}
+.table-wrap th{padding:12px 18px;text-align:left;font-size:12px;font-weight:500;color:var(--text-muted);background:var(--border-light);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+.table-wrap td{padding:12px 18px;font-size:13px;color:var(--text-primary);border-bottom:1px solid var(--border-light)}
+.table-wrap tr:last-child td{border-bottom:none}
+.table-wrap tr:hover td{background:var(--green-light)}
+.status-tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:500}
+.status-tag.green{background:#ecfdf5;color:#059669}
+.status-tag.yellow{background:#fef3c7;color:#b45309}
+.status-tag.blue{background:#eff6ff;color:#2563eb}
+.status-tag.red{background:#fef2f2;color:#dc2626}
+.status-tag.gray{background:#f1f5f9;color:#64748b}
+.table-actions{display:flex;gap:6px}
+.table-actions .act{padding:4px 10px;border-radius:4px;border:none;font-size:12px;cursor:pointer;font-family:inherit;transition:all .12s}
+.table-actions .act-edit{background:var(--green-light);color:var(--green-800);border:1px solid rgba(45,90,61,.12)}
+.table-actions .act-edit:hover{background:rgba(45,90,61,.1)}
+.table-actions .act-danger{background:#fef2f2;color:#dc2626;border:1px solid rgba(220,38,38,.1)}
+.table-actions .act-danger:hover{background:#fee2e2}
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar input,.filter-bar select{padding:8px 12px;font-size:13px;font-family:inherit;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);outline:none;min-width:140px}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--green-500)}
+.filter-bar .search-btn{padding:8px 16px;background:var(--green-800);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.filter-bar .search-btn:hover{background:var(--green-900)}
+.form-panel{background:var(--bg-card);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:24px;max-width:600px}
+.form-panel .form-group{margin-bottom:18px}
+.form-panel .form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text-primary)}
+.form-panel .form-group input,.form-panel .form-group textarea,.form-panel .form-group select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--bg-white);color:var(--text-primary);outline:none;transition:border-color .15s}
+.form-panel .form-group input:focus,.form-panel .form-group textarea:focus{border-color:var(--green-500)}
+.form-panel .form-group textarea{min-height:80px;resize:vertical}
+.form-panel .form-group .hint{font-size:11px;color:var(--text-muted);margin-top:4px}
+.perm-tree{display:flex;flex-direction:column;gap:2px}
+.perm-node{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:background .12s}
+.perm-node:hover{background:var(--green-light)}
+.perm-node input[type=checkbox]{accent-color:var(--green-800);width:16px;height:16px;cursor:pointer}
+.perm-node.level-1{font-weight:600;padding-left:12px}
+.perm-node.level-2{padding-left:32px;color:var(--text-secondary)}
+.perm-node.level-3{padding-left:52px;color:var(--text-secondary);font-size:12px}
+.pagination{display:flex;align-items:center;justify-content:center;gap:4px;padding:16px 0}
+.pagination .page{padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid var(--border-light);background:var(--bg-card);color:var(--text-secondary);transition:all .12s;min-width:32px;text-align:center}
+.pagination .page:hover{border-color:var(--text-muted)}
+.pagination .page.active{background:var(--green-800);color:#fff;border-color:var(--green-800)}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:2px}
+@media(max-width:900px){:root{--sidebar-w:200px}.chart-section{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.header{padding:0 16px}.content{padding:16px}}
+@media(max-width:640px){:root{--sidebar-w:56px}.sidebar-logo .name,.sidebar-logo .version,.menu-item .label,.menu-group-title .label,.menu-item .dot,.menu-group-title .arrow,.sidebar-user .info,.breadcrumb{display:none}.sidebar-logo{justify-content:center;padding:16px 8px}.menu-item{justify-content:center;padding:10px}.menu-group-title{justify-content:center;padding:8px}.menu-item .icon{margin:0}.content{padding:12px}.stats-grid{grid-template-columns:1fr}}
+</style>
+</head><body>
+<aside class="sidebar">
+<div class="sidebar-logo"><div class="icon">📚</div><span class="name">智慧书城</span><span class="version">v2.0</span></div>
+<nav class="sidebar-nav">
+<div class="menu-group">
+<div class="menu-group-title" onclick="toggleGroup(this)"><span class="icon">📊</span><span class="label">数据看板</span><span class="arrow open">▸</span></div>
+<div class="menu-items" id="g-dashboard">
+<a class="menu-item active" data-page="dashboard-overview" onclick="switchPage(this)"><span class="dot"></span><span class="label">总览</span></a>
+<a class="menu-item" data-page="dashboard-traffic" onclick="switchPage(this)"><span class="dot"></span><span class="label">访问统计</span></a>
+</div></div>
+<div class="menu-group">
+<div class="menu-group-title" onclick="toggleGroup(this)"><span class="icon">📖</span><span class="label">图书管理</span><span class="arrow open">▸</span></div>
+<div class="menu-items" id="g-books">
+<a class="menu-item" data-page="books-list" onclick="switchPage(this)"><span class="dot"></span><span class="label">图书列表</span></a>
+<a class="menu-item" data-page="books-categories" onclick="switchPage(this)"><span class="dot"></span><span class="label">分类管理</span></a>
+<a class="menu-item" data-page="books-banners" onclick="switchPage(this)"><span class="dot"></span><span class="label">Banner管理</span></a>
+</div></div>
+<div class="menu-group">
+<div class="menu-group-title" onclick="toggleGroup(this)"><span class="icon">🛒</span><span class="label">订单管理</span><span class="arrow open">▸</span></div>
+<div class="menu-items" id="g-orders">
+<a class="menu-item" data-page="orders-list" onclick="switchPage(this)"><span class="dot"></span><span class="label">订单列表</span></a>
+<a class="menu-item" data-page="orders-refunds" onclick="switchPage(this)"><span class="dot"></span><span class="label">退款管理</span></a>
+</div></div>
+<div class="menu-group">
+<div class="menu-group-title" onclick="toggleGroup(this)"><span class="icon">⚙️</span><span class="label">系统管理</span><span class="arrow open">▸</span></div>
+<div class="menu-items" id="g-settings">
+<a class="menu-item" data-page="settings-groups" onclick="switchPage(this)"><span class="dot"></span><span class="label">权限组</span></a>
+<a class="menu-item" data-page="settings-menus" onclick="switchPage(this)"><span class="dot"></span><span class="label">菜单管理</span></a>
+<a class="menu-item" data-page="settings-ai" onclick="switchPage(this)"><span class="dot"></span><span class="label">AI设置</span></a>
+</div></div>
+</nav>
+<div class="sidebar-footer">
+<div class="sidebar-user"><div class="avatar">管</div><div class="info"><div class="uname">超级管理员</div><div class="urole">admin</div></div></div>
+</div></aside>
+<div class="main">
+<header class="header">
+<div class="breadcrumb"><a>首页</a><span class="sep">/</span><a id="bc-parent">数据看板</a><span class="sep">/</span><span class="current" id="bc-current">总览</span></div>
+<div class="header-right">
+<div class="header-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="badge"></span></div>
+<div class="header-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+</div></header>
+<div class="content">
+<div class="page-section active" id="page-dashboard-overview">
+<div class="page-title"><div><h2>数据总览</h2><div class="sub">智慧书城运营数据概览</div></div><div class="page-actions"><button class="btn btn-outline">📅 近30天</button><button class="btn btn-primary">📥 导出报告</button></div></div>
+<div class="stats-grid">
+<div class="stat-card"><div class="label">今日订单</div><div class="value">128</div><div class="change up">↑ 12.5% 较昨日</div></div>
+<div class="stat-card"><div class="label">今日成交额</div><div class="value">¥12,680</div><div class="change up">↑ 8.3% 较昨日</div></div>
+<div class="stat-card"><div class="label">活跃用户</div><div class="value">1,256</div><div class="change up">↑ 3.2% 较昨日</div></div>
+<div class="stat-card"><div class="label">新增用户</div><div class="value">48</div><div class="change up">↑ 6.7% 较昨日</div></div>
+<div class="stat-card"><div class="label">总图书数</div><div class="value">12,480</div><div class="change" style="color:var(--text-muted);">持平</div></div>
+<div class="stat-card"><div class="label">待处理订单</div><div class="value">23</div><div class="change down">↓ 5 项需关注</div></div>
+</div>
+<div class="chart-section">
+<div class="card-panel"><div class="card-header"><h3>近7日销售趋势</h3><span class="tag">单位：元</span></div><div class="chart-bars" id="salesChart"></div></div>
+<div class="card-panel"><div class="card-header"><h3>订单状态分布</h3><span class="tag">当前</span></div>
+<div class="pie-legend">
+<div class="row"><span class="color" style="background:#059669;"></span><span class="label">已完成</span><span class="val">1,856</span></div>
+<div class="row"><span class="color" style="background:#3b82f6;"></span><span class="label">已发货</span><span class="val">342</span></div>
+<div class="row"><span class="color" style="background:#f59e0b;"></span><span class="label">待付款</span><span class="val">89</span></div>
+<div class="row"><span class="color" style="background:#ef4444;"></span><span class="label">退款中</span><span class="val">12</span></div>
+<div class="row"><span class="color" style="background:#94a3b8;"></span><span class="label">已取消</span><span class="val">67</span></div>
+</div></div></div>
+<div class="card-panel"><div class="card-header"><h3>热销图书 TOP 5</h3><span class="tag">本月</span></div>
+<div class="table-wrap" style="border:none;border-radius:0;margin-top:0;">
+<table><thead><tr><th>排名</th><th>书名</th><th>作者</th><th>分类</th><th>销量</th><th>销售额</th></tr></thead>
+<tbody>
+<tr><td><strong>1</strong></td><td>深入理解计算机系统</td><td>Randal Bryant</td><td>计算机</td><td>1,280</td><td>¥177,920</td></tr>
+<tr><td><strong>2</strong></td><td>百年孤独</td><td>加西亚·马尔克斯</td><td>文学小说</td><td>956</td><td>¥53,536</td></tr>
+<tr><td><strong>3</strong></td><td>人类简史</td><td>尤瓦尔·赫拉利</td><td>人文社科</td><td>842</td><td>¥58,940</td></tr>
+<tr><td><strong>4</strong></td><td>算法导论</td><td>Thomas Cormen</td><td>计算机</td><td>721</td><td>¥97,335</td></tr>
+<tr><td><strong>5</strong></td><td>设计的觉醒</td><td>原研哉</td><td>生活百科</td><td>635</td><td>¥41,275</td></tr>
+</tbody></table></div></div></div>
+<div class="page-section" id="page-dashboard-traffic">
+<div class="page-title"><div><h2>访问统计</h2><div class="sub">用户访问与流量分析</div></div></div>
+<div class="stats-grid"><div class="stat-card"><div class="label">今日 PV</div><div class="value">4,268</div><div class="change up">↑ 5.2%</div></div><div class="stat-card"><div class="label">今日 UV</div><div class="value">1,534</div><div class="change up">↑ 3.8%</div></div><div class="stat-card"><div class="label">平均停留</div><div class="value">4m32s</div><div class="change up">↑ 12s</div></div><div class="stat-card"><div class="label">跳出率</div><div class="value">32.1%</div><div class="change down">↓ 1.4%</div></div></div>
+<div class="chart-section" style="grid-template-columns:1fr;"><div class="card-panel"><div class="card-header"><h3>近7日流量趋势</h3><span class="tag">PV / UV</span></div><div class="chart-bars" id="trafficChart" style="height:140px;"></div></div></div></div>
+<div class="page-section" id="page-books-list">
+<div class="page-title"><div><h2>图书列表</h2><div class="sub">管理图书库存与信息</div></div><div class="page-actions"><button class="btn btn-primary">+ 新增图书</button></div></div>
+<div class="filter-bar"><input placeholder="搜索书名 / 作者 / ISBN"><select><option>全部分类</option><option>计算机</option><option>文学小说</option><option>人文社科</option></select><select><option>全部状态</option><option>上架</option><option>下架</option></select><button class="search-btn">搜索</button></div>
+<div class="table-wrap"><table><thead><tr><th>书名</th><th>作者</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td>深入理解计算机系统</td><td>Randal Bryant</td><td>计算机</td><td>¥139.00</td><td>500</td><td>1,280</td><td><span class="status-tag green">上架</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">下架</button></td></tr>
+<tr><td>百年孤独</td><td>加西亚·马尔克斯</td><td>文学小说</td><td>¥56.00</td><td>320</td><td>956</td><td><span class="status-tag green">上架</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">下架</button></td></tr>
+<tr><td>人类简史</td><td>尤瓦尔·赫拉利</td><td>人文社科</td><td>¥68.00</td><td>240</td><td>842</td><td><span class="status-tag green">上架</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">下架</button></td></tr>
+<tr><td>算法导论</td><td>Thomas Cormen</td><td>计算机</td><td>¥135.00</td><td>180</td><td>721</td><td><span class="status-tag green">上架</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">下架</button></td></tr>
+<tr><td>数据结构与算法分析</td><td>Mark Allen Weiss</td><td>计算机</td><td>¥79.00</td><td>0</td><td>534</td><td><span class="status-tag red">下架</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-edit">上架</button></td></tr>
+</tbody></table></div>
+<div class="pagination"><span class="page">‹</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">…</span><span class="page">12</span><span class="page">›</span></div></div>
+<div class="page-section" id="page-books-categories">
+<div class="page-title"><div><h2>分类管理</h2><div class="sub">图书分类与层级结构</div></div><div class="page-actions"><button class="btn btn-primary">+ 新增分类</button></div></div>
+<div class="table-wrap"><table><thead><tr><th>分类名称</th><th>父级</th><th>排序</th><th>图书数量</th><th>状态</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td><strong>📂 计算机</strong></td><td>— 顶级 —</td><td>1</td><td>280</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;├ 编程语言</td><td>计算机</td><td>1</td><td>85</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;├ 人工智能</td><td>计算机</td><td>2</td><td>62</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;├ 前端开发</td><td>计算机</td><td>3</td><td>48</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>📂 文学小说</td><td>— 顶级 —</td><td>2</td><td>420</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>📂 人文社科</td><td>— 顶级 —</td><td>3</td><td>320</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+</tbody></table></div></div>
+<div class="page-section" id="page-books-banners">
+<div class="page-title"><div><h2>Banner管理</h2><div class="sub">首页轮播图设置</div></div><div class="page-actions"><button class="btn btn-primary">+ 新增 Banner</button></div></div>
+<div class="table-wrap"><table><thead><tr><th>标题</th><th>链接类型</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td>📢 暑期图书大促</td><td><span class="status-tag blue">图书链接</span></td><td>1</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">删除</button></td></tr>
+<tr><td>📢 新书首发 · AI时代</td><td><span class="status-tag blue">URL</span></td><td>2</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">删除</button></td></tr>
+<tr><td>📢 会员专享 · 全场8折</td><td><span class="status-tag blue">分类</span></td><td>3</td><td><span class="status-tag gray">禁用</span></td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">删除</button></td></tr>
+</tbody></table></div></div>
+<div class="page-section" id="page-orders-list">
+<div class="page-title"><div><h2>订单列表</h2><div class="sub">查看和管理所有订单</div></div><div class="page-actions"><button class="btn btn-outline">📥 导出</button></div></div>
+<div class="filter-bar"><input placeholder="订单号 / 收货人 / 手机号"><select><option>全部状态</option><option>待付款</option><option>已付款</option><option>已发货</option><option>已完成</option><option>退款中</option></select><input type="date" value="2026-06-01" style="min-width:130px;"><input type="date" value="2026-06-04" style="min-width:130px;"><button class="search-btn">搜索</button></div>
+<div class="table-wrap"><table><thead><tr><th>订单号</th><th>用户</th><th>金额</th><th>状态</th><th>下单时间</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td style="font-family:monospace;font-size:12px;">ORD202606040001</td><td>读者小明</td><td>¥139.00</td><td><span class="status-tag blue">已付款</span></td><td>06-04 10:23</td><td class="table-actions"><button class="act act-edit">详情</button><button class="act act-edit">发货</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">ORD202606030012</td><td>书虫小李</td><td>¥268.00</td><td><span class="status-tag green">已完成</span></td><td>06-03 14:15</td><td class="table-actions"><button class="act act-edit">详情</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">ORD202606030008</td><td>文艺小张</td><td>¥56.00</td><td><span class="status-tag yellow">待付款</span></td><td>06-03 09:48</td><td class="table-actions"><button class="act act-edit">详情</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">ORD202606020045</td><td>求知小王</td><td>¥203.00</td><td><span class="status-tag blue">已发货</span></td><td>06-02 16:30</td><td class="table-actions"><button class="act act-edit">详情</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">ORD202606010033</td><td>读者大明</td><td>¥79.00</td><td><span class="status-tag red">退款中</span></td><td>06-01 11:05</td><td class="table-actions"><button class="act act-edit">详情</button><button class="act act-danger">退款审核</button></td></tr>
+</tbody></table></div>
+<div class="pagination"><span class="page">‹</span><span class="page active">1</span><span class="page">2</span><span class="page">3</span><span class="page">…</span><span class="page">28</span><span class="page">›</span></div></div>
+<div class="page-section" id="page-orders-refunds">
+<div class="page-title"><div><h2>退款管理</h2><div class="sub">处理用户退款申请</div></div></div>
+<div class="table-wrap"><table><thead><tr><th>退款单号</th><th>订单号</th><th>用户</th><th>金额</th><th>原因</th><th>状态</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td style="font-family:monospace;font-size:12px;">RF202606040001</td><td style="font-family:monospace;font-size:12px;">ORD202606010033</td><td>读者大明</td><td>¥79.00</td><td>商品破损</td><td><span class="status-tag yellow">待审核</span></td><td class="table-actions"><button class="act act-edit">通过</button><button class="act act-danger">拒绝</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">RF202606020002</td><td style="font-family:monospace;font-size:12px;">ORD202605280021</td><td>书迷小赵</td><td>¥56.00</td><td>发错商品</td><td><span class="status-tag green">已通过</span></td><td class="table-actions"><button class="act act-edit">详情</button></td></tr>
+<tr><td style="font-family:monospace;font-size:12px;">RF202605300003</td><td style="font-family:monospace;font-size:12px;">ORD202605250012</td><td>读者小王</td><td>¥135.00</td><td>不想要了</td><td><span class="status-tag red">已拒绝</span></td><td class="table-actions"><button class="act act-edit">详情</button></td></tr>
+</tbody></table></div></div>
+<div class="page-section" id="page-settings-groups">
+<div class="page-title"><div><h2>权限组管理</h2><div class="sub">管理角色与菜单权限分配</div></div><div class="page-actions"><button class="btn btn-primary">+ 新增权限组</button></div></div>
+<div class="table-wrap" style="margin-bottom:24px;"><table><thead><tr><th>权限组</th><th>描述</th><th>成员数</th><th>状态</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td><strong>超级管理员</strong></td><td>拥有全部菜单和操作权限</td><td>3</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">权限分配</button><button class="act act-edit">编辑</button></td></tr>
+<tr><td><strong>客服</strong></td><td>订单管理 + 数据看板（只读）</td><td>5</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">权限分配</button><button class="act act-edit">编辑</button></td></tr>
+<tr><td><strong>运营</strong></td><td>图书管理 + Banner 管理</td><td>2</td><td><span class="status-tag green">启用</span></td><td class="table-actions"><button class="act act-edit">权限分配</button><button class="act act-edit">编辑</button></td></tr>
+</tbody></table></div>
+<div class="card-panel"><div class="card-header"><h3>权限分配 · 客服</h3><span class="tag">只读 + 订单</span></div>
+<div class="perm-tree">
+<div class="perm-node level-1"><input type="checkbox" checked> 数据看板</div>
+<div class="perm-node level-2"><input type="checkbox" checked> ▸ 总览</div>
+<div class="perm-node level-2"><input type="checkbox" checked> ▸ 访问统计</div>
+<div class="perm-node level-1"><input type="checkbox"> 图书管理</div>
+<div class="perm-node level-2"><input type="checkbox"> ▸ 图书列表</div>
+<div class="perm-node level-3"><input type="checkbox"> ▸ 新增图书</div>
+<div class="perm-node level-3"><input type="checkbox"> ▸ 编辑图书</div>
+<div class="perm-node level-1"><input type="checkbox" checked> 订单管理</div>
+<div class="perm-node level-2"><input type="checkbox" checked> ▸ 订单列表</div>
+<div class="perm-node level-2"><input type="checkbox" checked> ▸ 退款管理</div>
+<div class="perm-node level-3"><input type="checkbox" checked> ▸ 发货</div>
+<div class="perm-node level-3"><input type="checkbox" checked> ▸ 退款审核</div>
+<div class="perm-node level-1"><input type="checkbox"> 系统管理</div>
+</div>
+<div style="margin-top:16px;"><button class="btn btn-primary">保存权限</button></div></div></div>
+<div class="page-section" id="page-settings-menus">
+<div class="page-title"><div><h2>菜单管理</h2><div class="sub">配置系统菜单结构与按钮权限</div></div><div class="page-actions"><button class="btn btn-primary">+ 新增菜单</button></div></div>
+<div class="table-wrap"><table><thead><tr><th>菜单名称</th><th>路由路径</th><th>类型</th><th>权限标识</th><th>排序</th><th>可见</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td><strong>📊 数据看板</strong></td><td><code style="font-size:12px;color:var(--text-muted);">/dashboard</code></td><td><span class="status-tag blue">菜单</span></td><td><code style="font-size:11px;">dashboard:view</code></td><td>1</td><td>✅</td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>&nbsp;&nbsp;├ 总览</td><td><code style="font-size:12px;color:var(--text-muted);">/dashboard/overview</code></td><td><span class="status-tag blue">菜单</span></td><td>-</td><td>1</td><td>✅</td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td><strong>📖 图书管理</strong></td><td><code style="font-size:12px;color:var(--text-muted);">/books</code></td><td><span class="status-tag blue">菜单</span></td><td><code style="font-size:11px;">books:view</code></td><td>2</td><td>✅</td><td class="table-actions"><button class="act act-edit">编辑</button></td></tr>
+<tr><td>&nbsp;&nbsp;├ 新增图书(按钮)</td><td>-</td><td><span class="status-tag yellow">按钮</span></td><td><code style="font-size:11px;">books:create</code></td><td>0</td><td>-</td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">删除</button></td></tr>
+<tr><td>&nbsp;&nbsp;├ 编辑图书(按钮)</td><td>-</td><td><span class="status-tag yellow">按钮</span></td><td><code style="font-size:11px;">books:edit</code></td><td>0</td><td>-</td><td class="table-actions"><button class="act act-edit">编辑</button><button class="act act-danger">删除</button></td></tr>
+</tbody></table></div></div>
+<div class="page-section" id="page-settings-ai">
+<div class="page-title"><div><h2>AI设置</h2><div class="sub">配置AI对话模型与推荐参数</div></div></div>
+<div class="form-panel">
+<div class="form-group"><label>AI模型</label><input value="deepseek-chat"><div class="hint">支持的模型：deepseek-chat / gpt-4o / gpt-4o-mini</div></div>
+<div class="form-group"><label>API Key</label><input type="password" value="sk-xxxxxxxxxxxxxxxxxxxx"><div class="hint">留空则不修改</div></div>
+<div class="form-group"><label>API地址</label><input value="https://api.deepseek.com/v1"></div>
+<div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<div><label>生成温度</label><input value="0.7"><div class="hint">0 - 2，越高越随机</div></div>
+<div><label>最大Token</label><input value="2048"></div></div>
+<div class="form-group"><label>AI提示词模板</label><textarea>你是一个专业的图书推荐助手。你了解各类图书的内容特点，能根据用户的阅读偏好提供个性化推荐。</textarea></div>
+<div style="display:flex;gap:10px;"><button class="btn btn-primary">保存配置</button><button class="btn btn-outline">🔗 测试连接</button></div></div></div>
+</div></div>
+<script>
+function toggleGroup(el){var i=el.nextElementSibling,a=el.querySelector(".arrow");i.classList.contains("collapsed")?(i.classList.remove("collapsed"),a.classList.add("open")):(i.classList.add("collapsed"),a.classList.remove("open"))}
+function switchPage(el){document.querySelectorAll(".menu-item").forEach(function(m){m.classList.remove("active")});el.classList.add("active");var p=el.dataset.page;document.querySelectorAll(".page-section").forEach(function(x){x.classList.remove("active")});var t=document.getElementById("page-"+p);if(t)t.classList.add("active");var m={};m["dashboard-overview"]=["数据看板","总览"];m["dashboard-traffic"]=["数据看板","访问统计"];m["books-list"]=["图书管理","图书列表"];m["books-categories"]=["图书管理","分类管理"];m["books-banners"]=["图书管理","Banner管理"];m["orders-list"]=["订单管理","订单列表"];m["orders-refunds"]=["订单管理","退款管理"];m["settings-groups"]=["系统管理","权限组"];m["settings-menus"]=["系统管理","菜单管理"];m["settings-ai"]=["系统管理","AI设置"];var v=m[p]||["",""];document.getElementById("bc-parent").textContent=v[0];document.getElementById("bc-current").textContent=v[1]}
+function drawChart(i,h){var c=document.getElementById(i);if(!c)return;c.innerHTML="";var d=["周一","周二","周三","周四","周五","周六","周日"];h.forEach(function(v,idx){var t=document.createElement("div");t.style.cssText="flex:1;display:flex;flex-direction:column;align-items:center";var b=document.createElement("div");b.className="bar";b.style.height=v+"%";var l=document.createElement("div");l.className="bar-label";l.textContent=d[idx%7];t.appendChild(b);t.appendChild(l);c.appendChild(t)})}
+drawChart("salesChart",[35,52,48,65,78,55,72]);drawChart("trafficChart",[42,58,51,72,80,63,75]);
+</script>
+</body></html>

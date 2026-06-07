@@ -17,4 +17,8 @@ export class PasswordLoginDto {
   @IsString()
   @IsNotEmpty({ message: '验证码不能为空' })
   captcha?: string
+
+  @IsString()
+  @IsNotEmpty({ message: '验证码ID不能为空' })
+  captchaId?: string
 }
