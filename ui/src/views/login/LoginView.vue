@@ -164,7 +164,7 @@
       ElMessage.success('登录成功')
       router.replace('/')
     } catch {
-      /* 错误已在拦截器中统一 toast，此处仅重置 loading */
+      refreshCaptcha()
     } finally {
       loading.value = false
     }

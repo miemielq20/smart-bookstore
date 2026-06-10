@@ -84,21 +84,23 @@ async function main() {
 
   /* 二级菜单 */
   const subMenus = [
-    { parentId: 1, name: '总览', path: '/dashboard/overview', component: 'views/dashboard/overview.vue', permissionCode: 'dashboard:overview', sort: 1 },
-    { parentId: 1, name: '访问统计', path: '/dashboard/analytics', component: 'views/dashboard/analytics.vue', permissionCode: 'dashboard:analytics', sort: 2 },
-    { parentId: 2, name: '图书列表', path: '/books/list', component: 'views/books/list.vue', permissionCode: 'books:list', sort: 1 },
-    { parentId: 2, name: '分类管理', path: '/books/categories', component: 'views/books/categories.vue', permissionCode: 'books:categories', sort: 2 },
-    { parentId: 2, name: 'Banner管理', path: '/books/banners', component: 'views/books/banners.vue', permissionCode: 'books:banners', sort: 3 },
-    { parentId: 3, name: '订单列表', path: '/orders/list', component: 'views/orders/list.vue', permissionCode: 'orders:list', sort: 1 },
-    { parentId: 3, name: '退款管理', path: '/orders/refunds', component: 'views/orders/refunds.vue', permissionCode: 'orders:refunds', sort: 2 },
-    { parentId: 4, name: '权限组', path: '/system/groups', component: 'views/system/groups.vue', permissionCode: 'system:groups', sort: 1 },
-    { parentId: 4, name: '菜单管理', path: '/system/menus', component: 'views/system/menus.vue', permissionCode: 'system:menus', sort: 2 },
-    { parentId: 4, name: 'AI 设置', path: '/system/ai', component: 'views/system/ai.vue', permissionCode: 'system:ai', sort: 3 },
+    { parentId: 1, name: '总览', path: '/dashboard/Overview', component: 'views/dashboard/Overview.vue', permissionCode: 'dashboard:overview', sort: 1 },
+    { parentId: 1, name: '访问统计', path: '/dashboard/Analytics', component: 'views/dashboard/Analytics.vue', permissionCode: 'dashboard:analytics', sort: 2 },
+    { parentId: 2, name: '图书列表', path: '/books/BookList', component: 'views/books/BookList.vue', permissionCode: 'books:list', sort: 1 },
+    { parentId: 2, name: '分类管理', path: '/books/Categories', component: 'views/books/Categories.vue', permissionCode: 'books:categories', sort: 2 },
+    { parentId: 2, name: 'Banner管理', path: '/books/Banners', component: 'views/books/Banners.vue', permissionCode: 'books:banners', sort: 3 },
+    { parentId: 3, name: '订单列表', path: '/orders/OrderList', component: 'views/orders/OrderList.vue', permissionCode: 'orders:list', sort: 1 },
+    { parentId: 3, name: '退款管理', path: '/orders/Refunds', component: 'views/orders/Refunds.vue', permissionCode: 'orders:refunds', sort: 2 },
+    { parentId: 4, name: '权限组', path: '/system/Groups', component: 'views/system/Groups.vue', permissionCode: 'system:groups', sort: 1 },
+    { parentId: 4, name: '菜单管理', path: '/system/Menus', component: 'views/system/Menus.vue', permissionCode: 'system:menus', sort: 2 },
+    { parentId: 4, name: 'AI 设置', path: '/system/AI', component: 'views/system/AI.vue', permissionCode: 'system:ai', sort: 3 },
   ]
 
   for (const m of subMenus) {
     const existing = await prisma.menu.findFirst({ where: { permissionCode: m.permissionCode } })
-    if (!existing) {
+    if (existing) {
+      await prisma.menu.update({ where: { id: existing.id }, data: m })
+    } else {
       await prisma.menu.create({ data: m })
     }
   }
@@ -127,8 +129,8 @@ async function main() {
     })
   }
 
-  /* 权限分配：客服 → 数据看板 + 订单管理 */
-  const csMenuIds = [1, 5, 6, 3, 9, 10] // 数据看板总览+统计，订单管理+列表+退款
+  /* 权限分配：客服 → 图书管理+ 订单管理 */
+  const csMenuIds = [ 2, 3, 9, 10, 5, 7, 8 ,11] // 图书管理,订单管理+列表+退款
   for (const id of csMenuIds) {
     await prisma.groupMenu.upsert({
       where: { groupId_menuId: { groupId: 2, menuId: id } },

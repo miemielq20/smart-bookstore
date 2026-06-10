@@ -1,56 +1,72 @@
-﻿<template>
+<template>
   <header class="header">
-    <!-- 面包屑 -->
-    <div class="breadcrumb">
-      <a>首页</a>
-      <span class="sep">/</span>
-      <a>{{ parentTitle }}</a>
-      <span class="sep">/</span>
-      <span class="current">{{ currentTitle }}</span>
-    </div>
+    <!-- 面包屑导航 -->
+    <el-breadcrumb separator="/" class="header-breadcrumb">
+      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+      <el-breadcrumb-item v-if="breadcrumbParent">{{ breadcrumbParent }}</el-breadcrumb-item>
+      <el-breadcrumb-item>{{ breadcrumbCurrent }}</el-breadcrumb-item>
+    </el-breadcrumb>
 
-    <!-- 右侧操作 -->
+    <!-- 右侧操作按钮 -->
     <div class="header-right">
-      <div class="header-btn" title="通知">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
-        <span class="badge"></span>
-      </div>
-      <div class="header-btn" title="设置">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-        </svg>
-      </div>
+      <el-tooltip content="通知" placement="bottom" :show-after="500">
+        <div class="header-btn" @click="handleNotify">
+          <el-icon :size="16"><Bell /></el-icon>
+          <span class="badge" v-if="unreadCount > 0"></span>
+        </div>
+      </el-tooltip>
+
+      <el-tooltip content="设置" placement="bottom" :show-after="500">
+        <div class="header-btn" @click="handleSetting">
+          <el-icon :size="16"><Setting /></el-icon>
+        </div>
+      </el-tooltip>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { computed, ref } from "vue"
+import { useRoute, useRouter } from "vue-router"
+import { Bell, Setting } from "@element-plus/icons-vue"
+import { useMenuStore } from "@/stores/sider"
+import { storeToRefs } from "pinia"
+import { ElMessage } from "element-plus"
 
 const route = useRoute()
+const router = useRouter()
+const menuStore = useMenuStore()
+const { sidebarMenus } = storeToRefs(menuStore)
 
-/* 面包屑映射 — 后续从菜单数据动态生成 */
-const breadcrumbMap: Record<string, { parent: string; current: string }> = {
-  '/dashboard/overview':  { parent: '数据看板', current: '总览' },
-  '/dashboard/traffic':   { parent: '数据看板', current: '访问统计' },
-  '/books/list':           { parent: '图书管理', current: '图书列表' },
-  '/books/categories':     { parent: '图书管理', current: '分类管理' },
-  '/books/banners':        { parent: '图书管理', current: 'Banner管理' },
-  '/orders/list':          { parent: '订单管理', current: '订单列表' },
-  '/orders/refunds':       { parent: '订单管理', current: '退款管理' },
-  '/system/groups':        { parent: '系统管理', current: '权限组' },
-  '/system/menus':         { parent: '系统管理', current: '菜单管理' },
-  '/system/ai':            { parent: '系统管理', current: 'AI设置' },
+const unreadCount = ref(0)
+
+/* ====== 面包屑：从菜单树按当前路径查找层级 ====== */
+/* ====== 面包屑：从菜单树按当前路径查找层级 ====== */
+function findBreadcrumb(path: string): { parent: string; current: string; parentPath: string } {
+  for (const group of sidebarMenus.value) {
+    for (const child of group.children ?? []) {
+      if (child.path === path) {
+        return { parent: group.name, current: child.name, parentPath: group.children[0]?.path || "/" }
+      }
+    }
+  }
+  return { parent: "", current: "", parentPath: "" }
 }
 
-import { computed } from 'vue'
-const crumb = computed(() => breadcrumbMap[route.path] ?? { parent: '', current: '' })
-const parentTitle = computed(() => crumb.value.parent)
-const currentTitle = computed(() => crumb.value.current)
+const breadcrumb = computed(() => findBreadcrumb(route.path))
+const breadcrumbParent = computed(() => breadcrumb.value.parent)
+const breadcrumbParentPath = computed(() => breadcrumb.value.parentPath || "/")
+const breadcrumbCurrent = computed(() => breadcrumb.value.current || route.meta.title || route.path)
+
+/* ====== 通知按钮（占位） ====== */
+function handleNotify() {
+  ElMessage.info("通知功能开发中")
+}
+
+/* ====== 设置按钮 → 跳转系统设置 ====== */
+function handleSetting() {
+  router.push("/system/AI")
+}
 </script>
 
 <style lang="scss" scoped>
@@ -72,34 +88,69 @@ $green-800: #2d5a3d;
   flex-shrink: 0;
 }
 
-.breadcrumb {
-  display: flex; align-items: center; gap: 6px; font-size: 13px;
-  a { color: $text-secondary; text-decoration: none; &:hover { color: $green-800; } }
-  .sep { color: $text-muted; }
-  .current { color: $text-primary; font-weight: 500; }
+/* ====== 面包屑：覆盖 el-breadcrumb 样式 ====== */
+.header-breadcrumb {
+  :deep(.el-breadcrumb__inner) {
+    font-size: 13px;
+    color: $text-secondary;
+    font-weight: 400;
+    text-decoration: none;
+
+    &:hover {
+      color: $green-800;
+    }
+  }
+
+  :deep(.el-breadcrumb__separator) {
+    color: $text-muted;
+    font-weight: 400;
+    margin: 0 6px;
+  }
+
+  :deep(.el-breadcrumb__item:last-child .el-breadcrumb__inner) {
+    color: $text-primary;
+    font-weight: 500;
+    cursor: default;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
 }
 
+/* ====== 右侧按钮区 ====== */
 .header-right {
   margin-left: auto;
-  display: flex; align-items: center; gap: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .header-btn {
-  width: 34px; height: 34px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   border: 1px solid $border-light;
   background: $card-bg;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: $text-secondary;
   transition: all 0.15s;
   position: relative;
 
-  &:hover { border-color: $text-muted; color: $text-primary; }
+  &:hover {
+    border-color: $text-muted;
+    color: $text-primary;
+  }
 
   .badge {
-    position: absolute; top: -2px; right: -2px;
-    width: 8px; height: 8px;
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
     background: #dc2626;
     border-radius: 50%;
   }

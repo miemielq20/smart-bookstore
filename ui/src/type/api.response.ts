@@ -33,6 +33,7 @@ export interface MenuNode {
   name: string
   path: string
   icon: string | null
+  component?: string | null
   permissionCode: string
   sort: number
   visible: number

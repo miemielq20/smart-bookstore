@@ -33,7 +33,7 @@ export class AuthService {
 
   /* 密码登录 */
   async passwordLogin(dto: PasswordLoginDto) {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.users.findFirst({
       where: { username: dto.username, deletedAt: null, status: 1 },
     })
 
@@ -51,7 +51,7 @@ export class AuthService {
       if (!valid) throw new UnauthorizedException('验证码错误')
     }
 
-    await this.prisma.user.update({
+    await this.prisma.users.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     })
@@ -64,26 +64,26 @@ export class AuthService {
     if (!groupId) return []
 
     // 1. 查权限组分配的菜单 ID
-    const rows = await this.prisma.groupMenu.findMany({
+    const rows = await this.prisma.groupMenus.findMany({
       where: { groupId },
       select: { menuId: true },
     })
     const menuIds = rows.map((r) => r.menuId)
 
     // 2. 查菜单详情
-    const menus = await this.prisma.menu.findMany({
+    const menus = await this.prisma.menus.findMany({
       where: { id: { in: menuIds } },
     })
 
     // 3. 查按钮 ID
-    const btnRows = await this.prisma.groupButton.findMany({
+    const btnRows = await this.prisma.groupButtons.findMany({
       where: { groupId },
       select: { buttonId: true },
     })
     const buttonIds = btnRows.map((r) => r.buttonId)
 
     // 4. 查按钮详情
-    const buttons = await this.prisma.menuButton.findMany({
+    const buttons = await this.prisma.menuButtons.findMany({
       where: { id: { in: buttonIds } },
     })
 
@@ -102,7 +102,8 @@ export class AuthService {
         parentId: m.parentId,
         name: m.name,
         path: m.path,
-        icon: m.icon,
+        component: m.component,
+        icon: m.icon, 
         permissionCode: m.permissionCode,
         sort: m.sort,
         visible: m.visible,
