@@ -108,15 +108,14 @@ model BookTagRelations {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model Books {
+model books {
   id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  title         String    @db.VarChar(200)
+  title         String    @db.VarChar(200)@unique
   author        String    @db.VarChar(100)
-  isbn          String?   @db.VarChar(20)
+  isbn          String?   @db.VarChar(20)@unique
   coverUrl      String?   @map("cover_url") @db.VarChar(500)
   price         Decimal   @default(0.00) @db.Decimal(10, 2)
   originalPrice Decimal?  @map("original_price") @db.Decimal(10, 2)
-  categoryId    Int?      @map("category_id") @db.UnsignedInt
   description   String?   @db.Text
   language      String?   @default("中文") @db.VarChar(20)
   stock         Int       @default(0)
@@ -124,13 +123,12 @@ model Books {
   viewCount     Int       @default(0) @map("view_count")
   rating        Decimal?  @db.Decimal(2, 1)
   status        Int       @default(1) @db.TinyInt
-  reading       String     @db.VarChar(255)
   createdAt     DateTime  @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt     DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
   deletedAt     DateTime? @map("deleted_at") @db.DateTime(0)
+  reading       String?   @db.VarChar(255)
 
   @@index([author], map: "idx_author")
-  @@index([categoryId], map: "idx_category_id")
   @@index([deletedAt], map: "idx_deleted_at")
   @@index([isbn], map: "idx_isbn")
   @@index([salesCount], map: "idx_sales_count")
@@ -138,6 +136,17 @@ model Books {
   @@index([title], map: "idx_title")
   @@map("books")
   @@fulltext([title, description], map: "ft_title_desc")
+}
+
+model BookCategoryRelations {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  bookId     BigInt   @map("book_id") @db.UnsignedBigInt
+  categoryId Int      @map("category_id") @db.UnsignedInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@unique([bookId, categoryId], map: "uk_book_category")
+  @@index([categoryId], map: "idx_bcr_category")
+  @@map("book_category_relations")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -173,14 +182,11 @@ model CartItems {
 model Categories {
   id        Int      @id @default(autoincrement()) @db.UnsignedInt
   name      String   @db.VarChar(50)
-  parentId  Int?     @default(0) @map("parent_id") @db.UnsignedInt
   sort      Int      @default(0)
   icon      String?  @db.VarChar(255)
   status    Int      @default(1) @db.TinyInt
   createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
   updatedAt DateTime @default(now()) @map("updated_at") @db.DateTime(0)
-
-  @@index([parentId], map: "idx_parent_id")
   @@index([sort], map: "idx_sort")
   @@map("categories")
 }
@@ -447,6 +453,8 @@ model Users {
   @@index([status], map: "idx_status")
   @@map("users")
 }
+
+
 
 enum AiMessagesRole {
   USER

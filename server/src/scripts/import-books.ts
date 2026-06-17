@@ -16,13 +16,12 @@ const prisma: any = new PrismaClient({
 })
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/* 聚合数据配置 */
 const API_URL = "https://apis.juhe.cn/goodbook/query"
 const API_KEY = "175c7de31fdecb9a228995010b8fb11d"
 
 async function searchJuhe(page = 1) {
   const res = await axios.get(API_URL, {
-    params: { key: API_KEY, catalog_id: "242", pn: String(page), rn: "5", dtype: "json", q: "" },
+    params: { key: API_KEY, catalog_id: "1", pn: String(page), rn: "100", dtype: "json", q: "" },
     timeout: 15000,
   })
   if (res.status === 200) return res.data.result.data
@@ -46,42 +45,33 @@ async function main() {
   for (const b of books) {
     if (!b.title) continue
 
-    /* 去重：先查 ISBN，再查书名 */
-    const isbn = b.isbn ?? null
-    let exist = isbn ? await prisma.books.findFirst({ where: { isbn } }) : null
-    if (!exist) exist = await prisma.books.findFirst({ where: { title: b.title } })
+    /* 去重：按书名 */
+    const exist = await prisma.books.findFirst({ where: { title: b.title } })
     if (exist) {
       console.log(`  [跳过] ${b.title}`)
       continue
     }
 
-    /* 处理分类 */
-    let categoryId: number | null = null
+    /* 处理分类 → 收集 categoryIds */
+    const categoryIds: number[] = []
     if (b.catalog && typeof b.catalog === "string") {
-      const parts = b.catalog.split(/\s+/).filter(Boolean)
-      const parentName = parts[0]
-      if (parentName) {
-        let parent = await prisma.categories.findFirst({
-          where: { name: parentName, parentId: 0 },
-        })
-        if (!parent) {
-          parent = await prisma.categories.create({
-            data: { name: parentName, parentId: 0 },
+      const parts = b.catalog
+        .replace(/\u3000/g, " ")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((s: string) => s.trim())
+      for (const catName of parts) {
+        let cat = await prisma.categories.findFirst({ where: { name: catName } })
+        if (!cat) {
+          cat = await prisma.categories.create({
+            data: { name: catName, parentId: 0 },
+          }).catch(async () => {
+            return await prisma.categories.findFirst({ where: { name: catName } })
           })
-          console.log(`    [新父分类] ${parentName}`)
+          console.log(`  [新分类] ${catName}`)
         }
-        categoryId = parent.id
-        for (const childName of parts.slice(1)) {
-          let child = await prisma.categories.findFirst({
-            where: { name: childName, parentId: parent.id },
-          })
-          if (!child) {
-            child = await prisma.categories.create({
-              data: { name: childName, parentId: parent.id },
-            })
-            console.log(`    [新子分类] ${parentName} - ${childName}`)
-          }
-        }
+        categoryIds.push(cat.id)
       }
     }
 
@@ -90,20 +80,29 @@ async function main() {
       data: {
         title: b.title,
         author: b.author ?? "",
-        isbn,
-        cover_url: b.img ?? null,
-        price: b.price ? Number(b.price) : 0,
-        original_price: null,
-        category_id: categoryId,
+        isbn: b.isbn ?? null,
+        coverUrl: b.img ?? null,
+        price: b.price ? Number(b.price) : 59.0,
+        originalPrice: null,
         description: b.sub2 ?? null,
         language: "中文",
         stock: 100,
-        sales_count: 0,
-        view_count: 0,
+        salesCount: 0,
+        viewCount: 0,
         rating: 5.0,
         status: 1,
+        reading:b.reading
       },
     })
+
+    /* 写入图书-分类关联 */
+    for (const cid of categoryIds) {
+      await prisma.BookCategoryRelations.create({
+        data: { bookId: book.id, categoryId: cid },
+      }).catch(() => {
+        console.log('插入失败')
+      })
+    }
 
     /* 标签处理 */
     let tagCount = 0
@@ -114,15 +113,15 @@ async function main() {
           tag = await prisma.tags.create({ data: { name: tagName } })
           totalTags++
         }
-        await prisma.book_tag_relations
-          .create({ data: { book_id: book.id, tag_id: tag.id } })
-          .catch(() => {})
+        await prisma.BookTagRelations.create({
+          data: { bookId: book.id, tagId: tag.id },
+        }).catch(() => {})
         tagCount++
       }
     }
 
     totalBooks++
-    console.log(`  [导入] ${b.title}（标签 ${tagCount}）`)
+    console.log(`  [导入] ${b.title}（分类 ${categoryIds.length} / 标签 ${tagCount}）`)
     await sleep(1500)
   }
 

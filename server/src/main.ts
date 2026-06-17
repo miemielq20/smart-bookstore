@@ -10,6 +10,13 @@ dotenv.config()
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+ 
+  // 修复 BigInt 序列化问题
+  if (!(BigInt.prototype as any).toJSON) {
+    (BigInt.prototype as any).toJSON = function () {
+      return this.toString()
+    }
+  }
 
   /* 全局前缀：所有接口以 /api 开头 */
   app.setGlobalPrefix('api')

@@ -27,6 +27,7 @@ $bg-page: #f2ede4;
 .main {
   margin-left: 240px;
   flex: 1;
+  min-width: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -34,8 +35,10 @@ $bg-page: #f2ede4;
 
 .content {
   flex: 1;
+  min-width: 0;
   padding: 24px 28px;
   overflow-y: auto;
+  overflow-x: hidden;
 
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: #b0a494; border-radius: 2px; }
