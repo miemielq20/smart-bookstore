@@ -12,6 +12,8 @@ export class BookService {
     const { keyword, category, status } = query;
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 10;
+    const sort = query.sort ?? 'createdAt';
+    const order = query.order ?? 'desc';
 
     const where: any = {
       deletedAt: null,
@@ -60,7 +62,7 @@ export class BookService {
     const [list, total] = await Promise.all([
       this.prisma.books.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { [sort]: order },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

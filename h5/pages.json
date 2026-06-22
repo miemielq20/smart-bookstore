@@ -1,17 +1,60 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "智慧书城",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/category/category",
+			"style": {
+				"navigationBarTitleText": "分类",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/search/search",
+			"style": {
+				"navigationBarTitleText": "搜索",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/book/detail",
+			"style": {
+				"navigationBarTitleText": "图书详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/ai/ai",
+			"style": {
+				"navigationBarTitleText": "AI 选书",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/mine/mine",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom"
 			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "智慧书城",
+		"navigationBarBackgroundColor": "#F8F4EA",
+		"backgroundColor": "#F8F4EA",
+		"backgroundTextStyle": "dark"
+	},
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+		}
 	},
 	"uniIdRouter": {}
 }

@@ -1,5 +1,5 @@
 
-import { IsOptional, IsInt, Min, Max, IsString } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class BookQueryDto {
@@ -30,4 +30,14 @@ export class BookQueryDto {
   @Transform(({ value }) => Number(value))
   @IsInt()
   status?: number;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['createdAt', 'salesCount', 'price', 'rating'])
+  sort?: 'createdAt' | 'salesCount' | 'price' | 'rating';
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc';
 }
