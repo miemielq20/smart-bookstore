@@ -51,7 +51,10 @@
         class="books-table"
         empty-text="暂无图书数据"
       >
-        <el-table-column label="图书" min-width="360">
+        <!-- 直接展示图书在数据库中的主键编号，便于后台定位数据。 -->
+        <el-table-column prop="id" label="编号" width="90" align="center" />
+
+        <el-table-column label="图书" min-width="280">
           <template #default="{ row }">
             <div class="book-cell">
               <el-image
@@ -104,7 +107,7 @@
           <template #default="{ row }">{{ formatDate(row.updatedAt) }}</template>
         </el-table-column>
 
-        <el-table-column label="操作" width="170" align="center">
+        <el-table-column label="操作" width="260" align="center">
           <template #default="{ row }">
             <div class="table-actions">
               <el-button size="small" :icon="Edit" @click="openEditDialog(row)">编辑</el-button>
@@ -560,6 +563,12 @@ function formatDate(value: string) {
   overflow: hidden;
 }
 
+/* 操作列需要同时容纳编辑和删除按钮，禁止按钮被裁剪或换行。 */
+.books-table :deep(.el-table__fixed-right),
+.books-table :deep(.el-table__fixed-right-patch) {
+  overflow: visible;
+}
+
 .books-table :deep(.el-table__cell),
 .books-table :deep(.cell) {
   min-width: 0;
@@ -614,13 +623,19 @@ function formatDate(value: string) {
 
 .table-actions {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   gap: 6px;
+  min-width: max-content;
+  white-space: nowrap;
 }
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
+}
+
+.table-actions :deep(.el-button) {
+  flex: 0 0 auto;
 }
 
 .pager-row {

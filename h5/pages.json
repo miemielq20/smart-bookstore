@@ -1,6 +1,20 @@
 {
 	"pages": [
 		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/register/register",
+			"style": {
+				"navigationBarTitleText": "创建账号",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "智慧书城",
@@ -29,6 +43,13 @@
 			}
 		},
 		{
+			"path": "pages/cart/cart",
+			"style": {
+				"navigationBarTitleText": "购物车",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/ai/ai",
 			"style": {
 				"navigationBarTitleText": "AI 选书",
@@ -41,6 +62,48 @@
 				"navigationBarTitleText": "我的",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/profile/profile",
+			"style": {
+				"navigationBarTitleText": "个人资料",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/settings/settings",
+			"style": {
+				"navigationBarTitleText": "系统设置",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/order-confirm/order-confirm",
+			"style": { "navigationBarTitleText": "确认订单", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/payment/payment",
+			"style": { "navigationBarTitleText": "支付结果", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/orders/orders",
+			"style": { "navigationBarTitleText": "我的订单", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/order-detail/order-detail",
+			"style": { "navigationBarTitleText": "订单详情", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/refund/refund",
+			"style": { "navigationBarTitleText": "申请退款", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/addresses/addresses",
+			"style": { "navigationBarTitleText": "收货地址", "navigationStyle": "custom" }
+		},
+		{
+			"path": "pages/favorites/favorites",
+			"style": { "navigationBarTitleText": "我的收藏", "navigationStyle": "custom" }
 		}
 	],
 	"globalStyle": {

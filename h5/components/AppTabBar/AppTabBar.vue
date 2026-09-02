@@ -7,14 +7,15 @@
       :class="{ active: current === item.key }"
       @tap="goTab(item)"
     >
-      <image class="tab-icon" :src="current === item.key ? item.activeIcon : item.icon" mode="aspectFit" />
+      <u-icon v-if="item.key === 'cart'" name="shopping-cart" :color="current === item.key ? '#606C38' : '#7A6E5E'" size="24" />
+      <image v-else class="tab-icon" :src="current === item.key ? item.activeIcon : item.icon" mode="aspectFit" />
       <text class="tab-text">{{ item.text }}</text>
     </view>
   </view>
 </template>
 
 <script lang="ts" setup>
-type TabKey = 'home' | 'category' | 'ai' | 'mine'
+type TabKey = 'home' | 'category' | 'cart' | 'mine'
 
 interface TabItem {
   key: TabKey
@@ -31,7 +32,7 @@ defineProps<{
 const tabs: TabItem[] = [
   { key: 'home', text: '首页', url: '/pages/index/index', icon: '/static/tab/home.png', activeIcon: '/static/tab/home-active.png' },
   { key: 'category', text: '分类', url: '/pages/category/category', icon: '/static/tab/category.png', activeIcon: '/static/tab/category-active.png' },
-  { key: 'ai', text: 'AI', url: '/pages/ai/ai', icon: '/static/tab/ai.png', activeIcon: '/static/tab/ai-active.png' },
+  { key: 'cart', text: '购物车', url: '/pages/cart/cart', icon: '', activeIcon: '' },
   { key: 'mine', text: '我的', url: '/pages/mine/mine', icon: '/static/tab/mine.png', activeIcon: '/static/tab/mine-active.png' },
 ]
 

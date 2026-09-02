@@ -22,3 +22,8 @@ export interface BannerQueryParams extends PageQueryParams {
 }
 
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+
+export interface AddCartItemParams {
+  bookId: number
+  quantity?: number
+}

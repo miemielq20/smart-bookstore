@@ -31,6 +31,9 @@
       @focus="goSearch"
     />
     </view>
+    <!-- #ifndef MP-WEIXIN -->
+    <view class="fixed-head-spacer"></view>
+    <!-- #endif -->
 
     <swiper class="banner" circular indicator-dots indicator-color="rgba(255,253,247,.38)" indicator-active-color="#FFFDF7">
       <swiper-item v-for="(item, index) in displayBanners" :key="item.id">
@@ -241,7 +244,7 @@ function goSearch() {
 }
 
 function showCartTodo() {
-  uni.showToast({ title: '购物车页面待接入', icon: 'none' })
+  uni.navigateTo({ url: '/pages/cart/cart' })
 }
 
 function goBookDetail(id: number) {
@@ -288,9 +291,13 @@ function createBook(id: number, title: string, author: string, price: number, st
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 244rpx 28rpx calc(132rpx + env(safe-area-inset-bottom));
+  padding: 0 28rpx calc(132rpx + env(safe-area-inset-bottom));
   background: #f8f4ea;
   color: #2c2416;
+}
+
+.fixed-head-spacer {
+  height: 244rpx;
 }
 
 .mp-status-bar {

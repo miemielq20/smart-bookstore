@@ -12,8 +12,9 @@ import { RedisService } from './redis.service';
       useFactory: async (configService: ConfigService) => {
         const client = createClient({
           socket: {
-            host: configService.get('REDIS_HOST'),
-            port: configService.get('REDIS_PORT'),
+            host: configService.get('REDIS_HOST', '127.0.0.1'),
+            port: Number(configService.get('REDIS_PORT', 6379)),
+            connectTimeout: 3000,
           },
           password: configService.get('REDIS_PASSWORD') || undefined,
         });

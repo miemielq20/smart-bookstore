@@ -3,6 +3,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookQueryDto } from './dto/select-book.dto';
+import { assertBookStatusTransition } from './book-status.machine';
 
 @Injectable()
 export class BookService {
@@ -151,7 +152,7 @@ export class BookService {
     const bookId = BigInt(id);
     const exists = await this.prisma.books.findFirst({
       where: { id: bookId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, status: true },
     });
 
     if (!exists) {
@@ -188,7 +189,10 @@ export class BookService {
     if (bookDto.language !== undefined) data.language = bookDto.language || null;
     if (bookDto.stock !== undefined) data.stock = Number(bookDto.stock);
     if (bookDto.reading !== undefined) data.reading = bookDto.reading || null;
-    if (bookDto.status !== undefined) data.status = Number(bookDto.status);
+    if (bookDto.status !== undefined) {
+      assertBookStatusTransition(exists.status, Number(bookDto.status));
+      data.status = Number(bookDto.status);
+    }
 
     await this.prisma.books.update({
       where: { id: bookId },
@@ -210,12 +214,14 @@ export class BookService {
     const bookId = BigInt(id);
     const exists = await this.prisma.books.findFirst({
       where: { id: bookId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, status: true },
     });
 
     if (!exists) {
       throw new NotFoundException('图书不存在');
     }
+
+    assertBookStatusTransition(exists.status, status);
 
     const book = await this.prisma.books.update({
       where: { id: bookId },

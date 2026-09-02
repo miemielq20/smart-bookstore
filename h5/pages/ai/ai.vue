@@ -1,6 +1,7 @@
 <template>
   <view class="page">
     <u-navbar title="" :bg-color="theme.page" :border="false" :placeholder="true" :safe-area-inset-top="true" />
+    <view class="page-topbar"><view class="back-action" @tap="goBack"><u-icon name="arrow-left" color="#FFFDF7" size="21" /></view><text class="page-title">AI 选书</text></view>
     <view class="hero">
       <text class="title">AI 选书</text>
       <text class="sub">根据阅读偏好、预算和分类推荐图书</text>
@@ -21,13 +22,11 @@
       <u-cell title="人类群星闪耀时" label="历史瞬间、篇幅短、适合碎片时间" value="¥39.80" :border="false" />
       <u-cell title="万历十五年" label="从制度和人物理解历史" value="¥42.00" :border="false" />
     </u-cell-group>
-    <AppTabBar current="ai" />
   </view>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import AppTabBar from '../../components/AppTabBar/AppTabBar.vue'
 
 const theme = { page: '#F8F4EA' }
 const prompt = ref('')
@@ -35,6 +34,7 @@ const prompt = ref('')
 function toast() {
   uni.showToast({ title: 'AI 会话接口后续接入', icon: 'none' })
 }
+function goBack() { uni.navigateBack({ delta: 1 }) }
 </script>
 
 <style lang="scss" scoped>
@@ -44,6 +44,7 @@ function toast() {
   background: #f8f4ea;
   color: #2c2416;
 }
+.page-topbar { display: flex; align-items: center; gap: 18rpx; margin: 12rpx 0 26rpx; }.back-action { display: flex; width: 72rpx; height: 72rpx; align-items: center; justify-content: center; border-radius: 24rpx; background: #24433b; }.page-title { font-family: Georgia, 'Times New Roman', serif; font-size: 42rpx; font-weight: 700; }
 
 /* #ifdef MP-WEIXIN */
 .page {

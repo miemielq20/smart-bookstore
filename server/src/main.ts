@@ -4,6 +4,7 @@ import { AppModule } from './app.module'
 import {ResponseInterceptor} from './common/interceptors/reponse'
 import {HttpExceptionFilter} from './common/filters/http-exception.filter'
 import dotenv from 'dotenv'
+import { OrderRealtimeService } from './order/order.realtime'
 
 
 dotenv.config()
@@ -33,5 +34,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor())
   app.useGlobalFilters(new HttpExceptionFilter())
   await app.listen(process.env.PORT ?? 3000)
+  app.get(OrderRealtimeService).attach(app.getHttpServer())
 }
 bootstrap()

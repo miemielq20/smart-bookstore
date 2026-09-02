@@ -87,3 +87,39 @@ export type CategoryDetailApiResponse = ApiResponse<CategoryItem>
 export type CategoryOptionsApiResponse = ApiResponse<CategoryOption[]>
 export type BannerListApiResponse = ApiResponse<BannerListResult>
 export type BannerDetailApiResponse = ApiResponse<BannerItem>
+
+export interface AdminOrderItem {
+  id: number
+  orderNo: string
+  userNickname: string
+  userPhone: string
+  receiverName: string
+  receiverPhone: string
+  totalAmount: number
+  status: string
+  trackingNo?: string | null
+  itemCount: number
+  remark?: string | null
+  paidAt?: string | null
+  shippedAt?: string | null
+  completedAt?: string | null
+  cancelledAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminOrderDetail extends AdminOrderItem {
+  address: Record<string, string>
+  items: Array<{ id: number; bookId: number; book: { title?: string; author?: string; coverUrl?: string | null }; price: number; quantity: number }>
+  payments: Array<{ paymentNo: string; amount: number; method: string; status: string; paidAt?: string | null }>
+  refunds: Array<{ id: number; refundNo: string; amount: number; reason: string; status: string; handlerNote?: string | null; handledAt?: string | null }>
+}
+
+export interface AdminOrderListResult { list: AdminOrderItem[]; total: number; page: number; pageSize: number }
+export interface AdminRefundItem { id: number; refundNo: string; orderId: number; orderNo: string; userNickname: string; amount: number; reason: string; status: string; handlerNote?: string | null; handledAt?: string | null; createdAt: string }
+export interface AdminRefundListResult { list: AdminRefundItem[]; total: number; page: number; pageSize: number }
+export interface AdminOrderStats { totalCount: number; pendingCount: number; paidCount: number; shippedCount: number; completedCount: number; cancelledCount: number; afterSaleCount: number; refundingCount: number; todayCount: number; todayAmount: number }
+export type AdminOrderListApiResponse = ApiResponse<AdminOrderListResult>
+export type AdminOrderDetailApiResponse = ApiResponse<AdminOrderDetail>
+export type AdminRefundListApiResponse = ApiResponse<AdminRefundListResult>
+export type AdminOrderStatsApiResponse = ApiResponse<AdminOrderStats>

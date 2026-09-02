@@ -11,9 +11,13 @@ import { BookService } from './book/book.service';
 import { BookModule } from './book/book.module';
 import { CategoryModule } from './category/category.module';
 import { BannerModule } from './banner/banner.module';
+import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
+import { AddressModule } from './address/address.module';
+import { FavoriteModule } from './favorite/favorite.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, RedisModule, CaptchaModule, PermissionGroupModule,ConfigModule.forRoot({
+  imports: [PrismaModule, AuthModule, RedisModule, CaptchaModule, PermissionGroupModule, CartModule, OrderModule, AddressModule, FavoriteModule, ConfigModule.forRoot({
     isGlobal: true,
   }), BookModule, CategoryModule, BannerModule],
   controllers: [AppController],

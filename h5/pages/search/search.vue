@@ -32,12 +32,12 @@
             v-for="category in displayCategories"
             :key="category.id"
             :text="category.name"
-            :plain="category.name !== activeCategory"
-            :bg-color="category.name === activeCategory ? '#606C38' : '#FFFDF7'"
-            :border-color="category.name === activeCategory ? '#606C38' : 'rgba(96,108,56,.14)'"
-            :color="category.name === activeCategory ? '#FFFDF7' : '#606C38'"
+            :plain="!isCategoryActive(category)"
+            :bg-color="isCategoryActive(category) ? '#606C38' : '#FFFDF7'"
+            :border-color="isCategoryActive(category) ? '#606C38' : 'rgba(96,108,56,.14)'"
+            :color="isCategoryActive(category) ? '#FFFDF7' : '#606C38'"
             shape="circle"
-            @click="selectCategory(category.name)"
+            @click="selectCategory(category)"
           />
         </view>
       </scroll-view>
@@ -135,7 +135,7 @@ onLoad((options = {}) => {
   initStatusBar()
   const query = options as Record<string, string | undefined>
   keyword.value = query.keyword ?? ''
-  activeCategory.value = query.category ?? '全部'
+  activeCategory.value = query.category ?? ''
   loadCategories()
   loadBooks()
 })
@@ -170,8 +170,8 @@ async function loadBooks() {
       page: 1,
       pageSize: 30,
       status: 1,
-      keyword: keyword.value || undefined,
-      category: activeCategory.value && activeCategory.value !== '全部' ? activeCategory.value : undefined,
+      keyword: keyword.value ,
+      category: activeCategory.value ,
       sort: activeSort.sort,
       order: activeSort.order,
     })
@@ -187,9 +187,13 @@ function handleSearch() {
   loadBooks()
 }
 
-function selectCategory(name: string) {
-  activeCategory.value = name
+function selectCategory(category: CategoryOption) {
+  activeCategory.value = category.id === 0 ? '' : category.name
   loadBooks()
+}
+
+function isCategoryActive(category: CategoryOption) {
+  return category.id === 0 ? !activeCategory.value : activeCategory.value === category.name
 }
 
 function handleSortClick(item: { index: number }) {

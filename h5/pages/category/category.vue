@@ -17,6 +17,9 @@
         </view>
       </view>
     </view>
+    <!-- #ifndef MP-WEIXIN -->
+    <view class="fixed-head-spacer"></view>
+    <!-- #endif -->
 
     <view class="content">
       <scroll-view class="side" scroll-y show-scrollbar="false">
@@ -235,9 +238,13 @@ function formatPrice(value: number | string | null) {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: calc(170rpx + env(safe-area-inset-top)) 24rpx calc(132rpx + env(safe-area-inset-bottom));
+  padding: 0 24rpx calc(132rpx + env(safe-area-inset-bottom));
   background: #f8f4ea;
   color: #2c2416;
+}
+
+.fixed-head-spacer {
+  height: 170rpx;
 }
 
 .mp-status-bar {
@@ -309,7 +316,7 @@ function formatPrice(value: number | string | null) {
 .content {
   display: flex;
   gap: 20rpx;
-  height: calc(100vh - 322rpx - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(95vh - 302rpx - env(safe-area-inset-bottom));
   min-height: 980rpx;
 }
 

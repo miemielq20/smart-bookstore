@@ -19,6 +19,8 @@ import type {LoginApiResponse,GetCodeApiResponse, MenusApiResponse,getMenuTreeAp
   BookDetailApiResponse, BookCategoriesApiResponse, CategoryListApiResponse,
   CategoryDetailApiResponse, CategoryOptionsApiResponse, BannerListApiResponse,
   BannerDetailApiResponse} from '@/type/api.response'
+import type { AdminOrderDetailApiResponse, AdminOrderListApiResponse, AdminOrderStatsApiResponse, AdminRefundListApiResponse } from '@/type/api.response'
+import type { AdminOrderQueryParams, AdminRefundQueryParams } from '@/type/api.request'
 
 // 登录
 export const loginApi = (data: LoginParams): Promise<LoginApiResponse> =>
@@ -115,3 +117,19 @@ export const updateBannerStatusApi = (id: number, status: number): Promise<Banne
 // 删除 Banner
 export const deleteBannerApi = (id: number): Promise<BannerDetailApiResponse> =>
   request.delete(`/banners/${id}`)
+
+// 后台订单与退款管理接口。
+export const getAdminOrdersApi = (params: AdminOrderQueryParams): Promise<AdminOrderListApiResponse> => request.get('/admin/orders', { params })
+export const getAdminOrderApi = (id: number): Promise<AdminOrderDetailApiResponse> => request.get(`/admin/orders/${id}`)
+export const getAdminOrderStatsApi = (): Promise<AdminOrderStatsApiResponse> => request.get('/admin/orders/stats')
+export const shipAdminOrderApi = (id: number, trackingNo: string): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/ship`, { trackingNo })
+export const updateAdminOrderRemarkApi = (id: number, remark: string): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/remark`, { remark })
+export const cancelAdminOrderApi = (id: number): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/cancel`)
+// 管理员确认售后后，将订单转入退款审核状态。
+export const approveAdminAfterSaleApi = (id: number): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/after-sale/approve`)
+// 售后拒绝和重新发货接口。
+export const rejectAdminAfterSaleApi = (id: number): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/after-sale/reject`)
+export const reshipAdminAfterSaleApi = (id: number, trackingNo: string): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/orders/${id}/after-sale/reship`, { trackingNo })
+export const getAdminRefundsApi = (params: AdminRefundQueryParams): Promise<AdminRefundListApiResponse> => request.get('/admin/refunds', { params })
+export const approveAdminRefundApi = (id: number, handlerNote = ''): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/refunds/${id}/approve`, { handlerNote })
+export const rejectAdminRefundApi = (id: number, handlerNote: string): Promise<AdminOrderDetailApiResponse> => request.put(`/admin/refunds/${id}/reject`, { handlerNote })

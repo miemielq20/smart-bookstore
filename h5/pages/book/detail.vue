@@ -50,8 +50,8 @@
     </view>
 
     <view class="bottom-bar">
-      <u-button class="fav-btn" plain color="#606C38" icon="heart" text="收藏" @click="toast('已加入收藏')" />
-      <u-button class="cart-btn" color="#606C38" icon="shopping-cart" text="加入购物车" @click="toast('已加入购物车')" />
+      <u-button class="fav-btn" plain color="#606C38" icon="heart" :text="favorited ? '取消收藏' : '收藏'" @click="toggleFavorite" />
+      <u-button class="cart-btn" color="#606C38" icon="shopping-cart" text="加入购物车" :loading="adding" :disabled="book.status !== 1 || book.stock < 1" @click="addToCart" />
     </view>
   </view>
 </template>
@@ -59,7 +59,7 @@
 <script lang="ts" setup>
 // @ts-ignore - uni-app global objects
 import { computed, onMounted, ref } from 'vue'
-import { getBookDetailApi } from '../../services/bookstore'
+import { addCartItemApi, addFavoriteApi, getBookDetailApi, getFavoritesApi, removeFavoriteApi } from '../../services/bookstore'
 import { normalizeAssetUrl } from '../../services/assets'
 import type { BookItem } from '../../types'
 
@@ -67,6 +67,8 @@ import type { BookItem } from '../../types'
 const theme = { page: '#F8F4EA' }
 const book = ref<BookItem>(createBook(1, '人类群星闪耀时', '斯蒂芬·茨威格', 39.8, 64, 9.1, '短篇历史叙事，适合碎片阅读'))
 const coverSrc = ref('')
+const adding = ref(false)
+const favorited = ref(false)
 const statusBarHeight = ref(0)
 const mpStatusBarStyle = computed(() => ({ height: `${statusBarHeight.value}px` }))
 const navBarStyle = computed(() => (statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {}))
@@ -83,8 +85,15 @@ onMounted(() => {
 
 function initStatusBar() {
   // #ifdef MP-WEIXIN
+  const wxUni = uni as UniApp.Uni & {
+    getWindowInfo?: () => { statusBarHeight?: number }
+    getMenuButtonBoundingClientRect?: () => { top?: number }
+  }
+  const windowInfo = wxUni.getWindowInfo?.()
   const systemInfo = uni.getSystemInfoSync()
-  statusBarHeight.value = systemInfo.statusBarHeight || 0
+  const menuButton = wxUni.getMenuButtonBoundingClientRect?.()
+  const statusFromMenu = menuButton?.top ? Math.max(menuButton.top - 4, 0) : 0
+  statusBarHeight.value = Math.round(windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20)
   // #endif
 }
 
@@ -93,6 +102,11 @@ async function loadBook(id: number) {
     const res = await getBookDetailApi(id)
     book.value = res.data
     coverSrc.value = normalizeAssetUrl(res.data.coverUrl)
+    // 详情页打开时读取收藏记录，保证按钮状态与数据库一致。
+    if (uni.getStorageSync('token')) {
+      const favorites = await getFavoritesApi()
+      favorited.value = favorites.data.some((item) => item.book.id === res.data.id)
+    }
   } catch {
     book.value = createBook(id, '人类群星闪耀时', '斯蒂芬·茨威格', 39.8, 64, 9.1, '短篇历史叙事，适合碎片阅读')
     coverSrc.value = ''
@@ -109,9 +123,27 @@ function goBack() {
   uni.redirectTo({ url: '/pages/index/index' })
 }
 
-function toast(title: string) {
-  // @ts-ignore - uni-app global object
-  uni.showToast({ title, icon: 'none' })
+async function toggleFavorite() {
+  if (!uni.getStorageSync('token')) {
+    uni.navigateTo({ url: `/pages/login/login?redirect=${encodeURIComponent(`/pages/book/detail?id=${book.value.id}`)}` })
+    return
+  }
+  // 收藏按钮直接调用后端接口，避免只在前端显示假状态。
+  if (favorited.value) await removeFavoriteApi(book.value.id)
+  else await addFavoriteApi(book.value.id)
+  favorited.value = !favorited.value
+  uni.showToast({ title: favorited.value ? '已加入收藏' : '已取消收藏', icon: 'success' })
+}
+
+async function addToCart() {
+  if (adding.value || book.value.status !== 1 || book.value.stock < 1) return
+  adding.value = true
+  try {
+    await addCartItemApi({ bookId: book.value.id })
+    uni.showToast({ title: '已加入购物车', icon: 'success' })
+  } finally {
+    adding.value = false
+  }
 }
 
 function getCoverClass(id: number) {

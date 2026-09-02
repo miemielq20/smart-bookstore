@@ -86,3 +86,21 @@ export interface BannerFormParams {
 
 // 编辑 Banner 时允许只传变化字段。
 export type UpdateBannerParams = Partial<BannerFormParams>
+
+// 后台订单列表筛选条件。
+export interface AdminOrderQueryParams {
+  page?: number
+  pageSize?: number
+  keyword?: string
+  status?: string
+  dateFrom?: string
+  dateTo?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// 后台退款列表筛选条件。
+export interface AdminRefundQueryParams {
+  page?: number
+  pageSize?: number
+  status?: string
+}

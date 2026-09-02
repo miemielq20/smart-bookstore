@@ -28,6 +28,18 @@ export function request<TResponse, TData = Record<string, unknown>>(
     // 将 PATCH 方法转换为 POST，并添加 _method 标识
     let method = options.method ?? 'GET'
     let requestData = options.data
+
+    // uni-app H5 对 GET 请求的 data 对象兼容性不一致，可能会把对象序列化成 [object Object]。
+    // 统一将 GET 参数拼接到查询字符串，避免首页、分类和订单等列表接口收到非法参数。
+    let requestUrl = `${BASE_URL}${options.url}`
+    if (method === 'GET' && options.data && typeof options.data === 'object') {
+      const query = Object.entries(options.data as Record<string, unknown>)
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+        .join('&')
+      if (query) requestUrl += `${requestUrl.includes('?') ? '&' : '?'}${query}`
+      requestData = undefined
+    }
     
     if (method === 'PATCH') {
       method = 'POST'
@@ -35,7 +47,7 @@ export function request<TResponse, TData = Record<string, unknown>>(
     }
 
     uni.request({
-      url: `${BASE_URL}${options.url}`,
+      url: requestUrl,
       method: method as UniApp.RequestOptions['method'],
       data: requestData as UniApp.RequestOptions['data'],
       timeout: 15000,
