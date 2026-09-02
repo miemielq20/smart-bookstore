@@ -4,40 +4,56 @@
     <view class="mp-status-bar" :style="mpStatusBarStyle"></view>
     <!-- #endif -->
     <!-- #ifndef MP-WEIXIN -->
-    <u-navbar title="" :bg-color="theme.page" :border="false" :placeholder="true" :safe-area-inset-top="true" />
+    <u-navbar
+      title=""
+      :bg-color="theme.page"
+      :border="false"
+      :placeholder="true"
+      :safe-area-inset-top="true"
+    />
     <!-- #endif -->
 
     <view class="fixed-head home-fixed-head" :style="fixedHeadStyle">
-    <view class="header">
-      <view>
-        <text class="eyebrow">智慧书城</text>
-        <text class="title">今天读什么</text>
-        <text class="sub">根据上架图书与分类更新</text>
+      <view class="header">
+        <view>
+          <text class="eyebrow">智慧书城</text>
+          <text class="title">今天读什么</text>
+          <text class="sub">根据上架图书与分类更新</text>
+        </view>
+        <view class="cart-action" @tap="showCartTodo">
+          <text class="bag-body"></text>
+          <text class="bag-handle"></text>
+        </view>
       </view>
-      <view class="cart-action" @tap="showCartTodo">
-        <text class="bag-body"></text>
-        <text class="bag-handle"></text>
-      </view>
-    </view>
 
-    <u-search
-      v-model="keyword"
-      placeholder="书名 / 作者 / ISBN"
-      :show-action="false"
-      bg-color="#FFFDF7"
-      border-color="rgba(96,108,56,.16)"
-      height="46"
-      @click="goSearch"
-      @focus="goSearch"
-    />
+      <u-search
+        v-model="keyword"
+        placeholder="书名 / 作者 / ISBN"
+        :show-action="false"
+        bg-color="#FFFDF7"
+        border-color="rgba(96,108,56,.16)"
+        height="46"
+        @click="goSearch"
+        @focus="goSearch"
+      />
     </view>
     <!-- #ifndef MP-WEIXIN -->
     <view class="fixed-head-spacer"></view>
     <!-- #endif -->
 
-    <swiper class="banner" circular indicator-dots indicator-color="rgba(255,253,247,.38)" indicator-active-color="#FFFDF7">
+    <swiper
+      class="banner"
+      circular
+      indicator-dots
+      indicator-color="rgba(255,253,247,.38)"
+      indicator-active-color="#FFFDF7"
+    >
       <swiper-item v-for="(item, index) in displayBanners" :key="item.id">
-        <view class="banner-card" :class="{ 'has-image': !!item.imageUrl }" @tap="handleBannerIndex(index)">
+        <view
+          class="banner-card"
+          :class="{ 'has-image': !!item.imageUrl }"
+          @tap="handleBannerIndex(index)"
+        >
           <image v-if="item.imageUrl" class="banner-image" :src="item.imageUrl" mode="aspectFill" />
           <view class="banner-mask" />
           <view class="banner-copy">
@@ -86,7 +102,9 @@
         @tap="goBookDetail(book.id)"
       >
         <view class="cover" :class="getCoverClass(book.id)" :style="getCoverStyle(book.coverUrl)">
-          <view v-if="!book.coverUrl" class="cover-lines"><text></text><text></text><text></text></view>
+          <view v-if="!book.coverUrl" class="cover-lines"
+            ><text></text><text></text><text></text
+          ></view>
         </view>
         <text class="book-title">{{ book.title }}</text>
         <text class="book-author">{{ book.author || '未知作者' }}</text>
@@ -115,7 +133,11 @@
         @click="goBookDetail(book.id)"
       >
         <template #icon>
-          <view class="mini-cover" :class="getCoverClass(book.id)" :style="getCoverStyle(book.coverUrl)"></view>
+          <view
+            class="mini-cover"
+            :class="getCoverClass(book.id)"
+            :style="getCoverStyle(book.coverUrl)"
+          ></view>
         </template>
         <template #value>
           <text class="list-price">¥{{ formatPrice(book.price) }}</text>
@@ -136,7 +158,18 @@ import { getBannersApi, getBooksApi, getCategoryOptionsApi } from '../../service
 import type { BannerItem, BannerLinkType, BookItem, CategoryOption } from '../../types'
 
 const fallbackBanners: BannerItem[] = [
-  { id: 1, title: '本周新书已上架', imageUrl: '', linkUrl: null, linkType: 'CATEGORY', targetId: 1, sort: 1, status: 1, createdAt: '', updatedAt: '' },
+  {
+    id: 1,
+    title: '本周新书已上架',
+    imageUrl: '',
+    linkUrl: null,
+    linkType: 'CATEGORY',
+    targetId: 1,
+    sort: 1,
+    status: 1,
+    createdAt: '',
+    updatedAt: '',
+  },
 ]
 
 const fallbackCategories: CategoryOption[] = [
@@ -149,7 +182,16 @@ const fallbackCategories: CategoryOption[] = [
 ]
 
 const fallbackBooks: BookItem[] = [
-  createBook(1, '人类群星闪耀时', '斯蒂芬·茨威格', 39.8, 64, 1280, 9.1, '短篇历史叙事，适合碎片阅读'),
+  createBook(
+    1,
+    '人类群星闪耀时',
+    '斯蒂芬·茨威格',
+    39.8,
+    64,
+    1280,
+    9.1,
+    '短篇历史叙事，适合碎片阅读',
+  ),
   createBook(2, '置身事内', '兰小欢', 56, 38, 980, 9.2, '理解中国经济运行'),
   createBook(3, '万历十五年', '黄仁宇', 42, 28, 860, 8.9, '制度与人物视角的历史读物'),
   createBook(4, '活着', '余华', 35, 42, 1500, 9.4, '经典文学入门'),
@@ -165,12 +207,22 @@ const hotBooks = ref<BookItem[]>([])
 const newBooks = ref<BookItem[]>([])
 
 const displayBanners = computed(() => (banners.value.length ? banners.value : fallbackBanners))
-const displayCategories = computed(() => (categories.value.length ? categories.value : fallbackCategories))
-const displayHotBooks = computed(() => (hotBooks.value.length ? hotBooks.value : fallbackBooks).slice(0, 4))
-const displayNewBooks = computed(() => (newBooks.value.length ? newBooks.value : fallbackBooks).slice(0, 3))
+const displayCategories = computed(() =>
+  categories.value.length ? categories.value : fallbackCategories,
+)
+const displayHotBooks = computed(() =>
+  (hotBooks.value.length ? hotBooks.value : fallbackBooks).slice(0, 4),
+)
+const displayNewBooks = computed(() =>
+  (newBooks.value.length ? newBooks.value : fallbackBooks).slice(0, 3),
+)
 const mpStatusBarStyle = computed(() => ({ height: `${mpStatusBarHeight.value}px` }))
-const fixedHeadStyle = computed(() => (mpStatusBarHeight.value ? { top: `${mpStatusBarHeight.value}px` } : {}))
-const pageStyle = computed(() => (mpStatusBarHeight.value ? { paddingTop: `calc(${mpStatusBarHeight.value}px + 244rpx)` } : {}))
+const fixedHeadStyle = computed(() =>
+  mpStatusBarHeight.value ? { top: `${mpStatusBarHeight.value}px` } : {},
+)
+const pageStyle = computed(() =>
+  mpStatusBarHeight.value ? { paddingTop: `calc(${mpStatusBarHeight.value}px + 244rpx)` } : {},
+)
 onLoad(() => {
   initStatusBar()
   loadHome()
@@ -186,7 +238,9 @@ function initStatusBar() {
   const systemInfo = uni.getSystemInfoSync()
   const menuButton = wxUni.getMenuButtonBoundingClientRect?.()
   const statusFromMenu = menuButton?.top ? Math.max(menuButton.top - 4, 0) : 0
-  mpStatusBarHeight.value = Math.round(windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20)
+  mpStatusBarHeight.value = Math.round(
+    windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20,
+  )
   // #endif
 }
 
@@ -283,8 +337,36 @@ function formatPrice(value: number | string | null) {
   return Number(value ?? 0).toFixed(2)
 }
 
-function createBook(id: number, title: string, author: string, price: number, stock: number, salesCount: number, rating: number, reading: string): BookItem {
-  return { id, title, author, isbn: null, coverUrl: null, price, originalPrice: null, description: null, language: '中文', stock, salesCount, viewCount: 0, rating, status: 1, createdAt: '', updatedAt: '', deletedAt: null, reading }
+function createBook(
+  id: number,
+  title: string,
+  author: string,
+  price: number,
+  stock: number,
+  salesCount: number,
+  rating: number,
+  reading: string,
+): BookItem {
+  return {
+    id,
+    title,
+    author,
+    isbn: null,
+    coverUrl: null,
+    price,
+    originalPrice: null,
+    description: null,
+    language: '中文',
+    stock,
+    salesCount,
+    viewCount: 0,
+    rating,
+    status: 1,
+    createdAt: '',
+    updatedAt: '',
+    deletedAt: null,
+    reading,
+  }
 }
 </script>
 
@@ -387,7 +469,7 @@ function createBook(id: number, title: string, author: string, price: number, st
   height: 5rpx;
   border-radius: 50%;
   background: #fffdf7;
-  content: "";
+  content: '';
 }
 
 .bag-body::before {
@@ -440,7 +522,12 @@ function createBook(id: number, title: string, author: string, price: number, st
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(90deg, rgba(36, 67, 59, 0.78), rgba(36, 67, 59, 0.28) 58%, rgba(36, 67, 59, 0.06));
+  background: linear-gradient(
+    90deg,
+    rgba(36, 67, 59, 0.78),
+    rgba(36, 67, 59, 0.28) 58%,
+    rgba(36, 67, 59, 0.06)
+  );
 }
 
 .banner-card.has-image {
@@ -570,10 +657,18 @@ function createBook(id: number, title: string, author: string, price: number, st
   box-shadow: inset -20rpx 0 rgba(44, 36, 22, 0.08);
 }
 
-.cover-1 { background-color: #8b9d83; }
-.cover-2 { background-color: #c66b3d; }
-.cover-3 { background-color: #c08e3a; }
-.cover-0 { background-color: #b08b6e; }
+.cover-1 {
+  background-color: #8b9d83;
+}
+.cover-2 {
+  background-color: #c66b3d;
+}
+.cover-3 {
+  background-color: #c08e3a;
+}
+.cover-0 {
+  background-color: #b08b6e;
+}
 
 .cover-lines {
   padding: 34rpx 28rpx;
@@ -587,8 +682,13 @@ function createBook(id: number, title: string, author: string, price: number, st
   background: rgba(255, 253, 247, 0.66);
 }
 
-.cover-lines text:nth-child(2) { width: 68%; }
-.cover-lines text:nth-child(3) { width: 46%; margin-top: 88rpx; }
+.cover-lines text:nth-child(2) {
+  width: 68%;
+}
+.cover-lines text:nth-child(3) {
+  width: 46%;
+  margin-top: 88rpx;
+}
 
 .book-title {
   display: block;

@@ -7,8 +7,7 @@ export class CaptchaController {
 
   @Get()
   getCaptcha() {
-    return this.captchaService.generate()
-    .then(({ uuid, base64, mime }) => ({
+    return this.captchaService.generate().then(({ uuid, base64, mime }) => ({
       uuid,
       img: `data:${mime};base64,${base64}`,
     }))

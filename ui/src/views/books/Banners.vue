@@ -113,7 +113,11 @@
           <el-input v-model.trim="form.imageUrl" placeholder="https://..." />
         </el-form-item>
         <el-form-item label="链接类型" prop="linkType">
-          <el-select v-model="form.linkType" class="full-form-control" @change="handleLinkTypeChange">
+          <el-select
+            v-model="form.linkType"
+            class="full-form-control"
+            @change="handleLinkTypeChange"
+          >
             <el-option label="图书" value="BOOK" />
             <el-option label="分类" value="CATEGORY" />
             <el-option label="URL" value="URL" />
@@ -123,7 +127,11 @@
         <el-form-item v-if="form.linkType === 'URL'" label="链接地址" prop="linkUrl">
           <el-input v-model.trim="form.linkUrl" placeholder="https://..." />
         </el-form-item>
-        <el-form-item v-if="form.linkType === 'BOOK' || form.linkType === 'CATEGORY'" label="目标 ID" prop="targetId">
+        <el-form-item
+          v-if="form.linkType === 'BOOK' || form.linkType === 'CATEGORY'"
+          label="目标 ID"
+          prop="targetId"
+        >
           <el-input-number v-model="form.targetId" :min="1" :step="1" controls-position="right" />
         </el-form-item>
         <div class="form-grid">
@@ -376,7 +384,8 @@ function buildPayload(): BannerFormParams {
     imageUrl: form.imageUrl,
     linkType: form.linkType,
     linkUrl: form.linkType === 'URL' ? form.linkUrl : undefined,
-    targetId: form.linkType === 'BOOK' || form.linkType === 'CATEGORY' ? Number(form.targetId) : undefined,
+    targetId:
+      form.linkType === 'BOOK' || form.linkType === 'CATEGORY' ? Number(form.targetId) : undefined,
     sort: Number(form.sort),
     status: Number(form.status),
   }

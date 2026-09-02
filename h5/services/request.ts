@@ -40,7 +40,7 @@ export function request<TResponse, TData = Record<string, unknown>>(
       if (query) requestUrl += `${requestUrl.includes('?') ? '&' : '?'}${query}`
       requestData = undefined
     }
-    
+
     if (method === 'PATCH') {
       method = 'POST'
       requestData = { ...options.data, _method: 'PATCH' } as any

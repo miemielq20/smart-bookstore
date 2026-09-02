@@ -5,21 +5,35 @@ import { PrismaModule } from './prisma/prisma.module'
 import { AuthModule } from './auth/auth.module'
 import { RedisModule } from './redis/redis.module'
 import { CaptchaModule } from './captcha/captcha.module'
-import { PermissionGroupModule } from './permission-group/permission-group.module' 
+import { PermissionGroupModule } from './permission-group/permission-group.module'
 import { ConfigModule } from '@nestjs/config'
-import { BookService } from './book/book.service';
-import { BookModule } from './book/book.module';
-import { CategoryModule } from './category/category.module';
-import { BannerModule } from './banner/banner.module';
-import { CartModule } from './cart/cart.module';
-import { OrderModule } from './order/order.module';
-import { AddressModule } from './address/address.module';
-import { FavoriteModule } from './favorite/favorite.module';
+import { BookService } from './book/book.service'
+import { BookModule } from './book/book.module'
+import { CategoryModule } from './category/category.module'
+import { BannerModule } from './banner/banner.module'
+import { CartModule } from './cart/cart.module'
+import { OrderModule } from './order/order.module'
+import { AddressModule } from './address/address.module'
+import { FavoriteModule } from './favorite/favorite.module'
 
 @Module({
-  imports: [PrismaModule, AuthModule, RedisModule, CaptchaModule, PermissionGroupModule, CartModule, OrderModule, AddressModule, FavoriteModule, ConfigModule.forRoot({
-    isGlobal: true,
-  }), BookModule, CategoryModule, BannerModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    RedisModule,
+    CaptchaModule,
+    PermissionGroupModule,
+    CartModule,
+    OrderModule,
+    AddressModule,
+    FavoriteModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    BookModule,
+    CategoryModule,
+    BannerModule,
+  ],
   controllers: [AppController],
   providers: [AppService, BookService],
 })

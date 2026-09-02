@@ -1,18 +1,18 @@
-import { Injectable } from "@nestjs/common"
-import { PrismaService } from "../prisma/prisma.service"
-import { UpdatePermissionDto } from "./dto/update-permission.dto"
-import { CreatePermissionDto } from "./dto/create-permission.dto"
-import { PermissionGroupEntity } from "./entities/permission-group.entity"
-import { MenuEntity } from "./entities/menu.entity"
+import { Injectable } from '@nestjs/common'
+import { PrismaService } from '../prisma/prisma.service'
+import { UpdatePermissionDto } from './dto/update-permission.dto'
+import { CreatePermissionDto } from './dto/create-permission.dto'
+import { PermissionGroupEntity } from './entities/permission-group.entity'
+import { MenuEntity } from './entities/menu.entity'
 
 @Injectable()
 export class PermissionGroupService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /* 查询所有权限组(含成员数) */
   async findAll() {
     const groups = await this.prisma.permissionGroups.findMany({
-      orderBy: { id: "asc" },
+      orderBy: { id: 'asc' },
     })
 
     const result: PermissionGroupEntity[] = []
@@ -51,7 +51,7 @@ export class PermissionGroupService {
       status: group.status,
       createdAt: group.createdAt,
       updatedAt: group.updatedAt,
-      memberCount: 0, 
+      memberCount: 0,
     }
   }
 
@@ -86,24 +86,26 @@ export class PermissionGroupService {
 
   // 获取菜单树
   async getMenuTree() {
-    const menus = await this.prisma.menus.findMany({ orderBy: { sort: "asc" } })
-    const mapped = menus.map(m => ({
-    id: Number(m.id),
-    parentId: Number(m.parentId),
-    name: m.name,
-    path: m.path,
-    icon: m.icon,
-    component: m.component,
-    sort: m.sort,
-    status: m.status,
-    visible: m.visible,
-    permissionCode: m.permissionCode,
-    createdAt: m.createdAt,
-    updatedAt: m.updatedAt,
-  })as MenuEntity)
+    const menus = await this.prisma.menus.findMany({ orderBy: { sort: 'asc' } })
+    const mapped = menus.map(
+      (m) =>
+        ({
+          id: Number(m.id),
+          parentId: Number(m.parentId),
+          name: m.name,
+          path: m.path,
+          icon: m.icon,
+          component: m.component,
+          sort: m.sort,
+          status: m.status,
+          visible: m.visible,
+          permissionCode: m.permissionCode,
+          createdAt: m.createdAt,
+          updatedAt: m.updatedAt,
+        }) as MenuEntity,
+    )
     return buildTree(mapped)
   }
-
 }
 
 /* 辅助：平铺菜单数组转树 */
@@ -124,6 +126,3 @@ function buildTree(list: MenuEntity[]): MenuEntity[] {
   }
   return tree
 }
-
-
-

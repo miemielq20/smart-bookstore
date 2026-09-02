@@ -2,8 +2,7 @@ import { request } from './request'
 import type { LoginParams, RegisterParams } from '../types/auth'
 import type { CaptchaResponse, LoginResponse, ProfileResponse } from '../types/response'
 
-export const getCaptchaApi = () =>
-  request<CaptchaResponse>({ url: '/getCode' })
+export const getCaptchaApi = () => request<CaptchaResponse>({ url: '/getCode' })
 
 export const loginApi = (params: LoginParams) =>
   request<LoginResponse, LoginParams>({ url: '/auth/login', method: 'POST', data: params })

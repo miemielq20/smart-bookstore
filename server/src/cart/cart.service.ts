@@ -7,6 +7,8 @@ import { AddCartItemDto } from './dto/add-cart-item.dto'
 export class CartService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // 查询购物车商品并拼接最新图书信息。
+  // 查询购物车商品并拼接最新图书信息。
   async getCart(userId: number) {
     const items = await this.prisma.cartItems.findMany({
       where: { userId: BigInt(userId) },
@@ -19,6 +21,8 @@ export class CartService {
     return this.formatCart(items, bookMap)
   }
 
+  // 添加图书到购物车，并校验图书状态和库存。
+  // 添加图书到购物车，并校验图书状态和库存。
   async addItem(userId: number, dto: AddCartItemDto) {
     const user = BigInt(userId)
     const book = await this.prisma.books.findFirst({
@@ -41,6 +45,8 @@ export class CartService {
     return this.getCart(userId)
   }
 
+  // 修改购物车商品数量，确保数量不超过当前库存。
+  // 修改购物车商品数量，确保数量不超过当前库存。
   async updateQuantity(userId: number, itemId: number, quantity: number) {
     const item = await this.findItem(userId, itemId)
     const book = await this.getPurchasableBook(item.bookId)
@@ -49,12 +55,16 @@ export class CartService {
     return this.getCart(userId)
   }
 
+  // 更新单个购物车商品的结算选中状态。
+  // 更新单个购物车商品的结算选中状态。
   async updateSelected(userId: number, itemId: number, selected: number) {
     await this.findItem(userId, itemId)
     await this.prisma.cartItems.update({ where: { id: BigInt(itemId) }, data: { selected } })
     return this.getCart(userId)
   }
 
+  // 批量更新当前用户购物车商品的选中状态。
+  // 批量更新当前用户购物车商品的选中状态。
   async updateAllSelected(userId: number, selected: number) {
     await this.prisma.cartItems.updateMany({
       where: { userId: BigInt(userId) },
@@ -63,12 +73,16 @@ export class CartService {
     return this.getCart(userId)
   }
 
+  // 删除当前用户购物车中的指定商品。
+  // 删除当前用户购物车中的指定商品。
   async removeItem(userId: number, itemId: number) {
     await this.findItem(userId, itemId)
     await this.prisma.cartItems.delete({ where: { id: BigInt(itemId) } })
     return this.getCart(userId)
   }
 
+  // 清理当前用户购物车中已选中的商品。
+  // 清理当前用户购物车中已选中的商品。
   async clearSelected(userId: number) {
     await this.prisma.cartItems.deleteMany({ where: { userId: BigInt(userId), selected: 1 } })
     return this.getCart(userId)
@@ -112,26 +126,34 @@ export class CartService {
       const book = bookMap.get(item.bookId.toString())
       if (!book) return []
       const price = Number(book?.price ?? 0)
-      return [{
-        id: Number(item.id),
-        quantity: item.quantity,
-        selected: item.selected === 1,
-        subtotal: Number((price * item.quantity).toFixed(2)),
-        book: {
-          ...book,
-          id: Number(book.id),
-          price,
-          originalPrice: book?.originalPrice === null || book?.originalPrice === undefined ? null : Number(book.originalPrice),
-          rating: book?.rating === null || book?.rating === undefined ? null : Number(book.rating),
+      return [
+        {
+          id: Number(item.id),
+          quantity: item.quantity,
+          selected: item.selected === 1,
+          subtotal: Number((price * item.quantity).toFixed(2)),
+          book: {
+            ...book,
+            id: Number(book.id),
+            price,
+            originalPrice:
+              book?.originalPrice === null || book?.originalPrice === undefined
+                ? null
+                : Number(book.originalPrice),
+            rating:
+              book?.rating === null || book?.rating === undefined ? null : Number(book.rating),
+          },
         },
-      }]
+      ]
     })
     const selectedItems = formattedItems.filter((item) => item.selected)
     return {
       items: formattedItems,
       totalCount: formattedItems.reduce((sum, item) => sum + item.quantity, 0),
       selectedCount: selectedItems.reduce((sum, item) => sum + item.quantity, 0),
-      selectedAmount: Number(selectedItems.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2)),
+      selectedAmount: Number(
+        selectedItems.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2),
+      ),
     }
   }
 }

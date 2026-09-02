@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Req, UseGuards } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
 import type { Request } from 'express'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { FavoriteService } from './favorite.service'
@@ -9,7 +19,9 @@ export class FavoriteController {
   constructor(private readonly service: FavoriteService) {}
 
   @Get()
-  list(@Req() req: Request) { return this.service.list(this.userId(req)) }
+  list(@Req() req: Request) {
+    return this.service.list(this.userId(req))
+  }
 
   @Post('batch')
   batchAdd(@Req() req: Request, @Body() body: { bookIds?: number[] }) {
@@ -27,5 +39,7 @@ export class FavoriteController {
     return this.service.remove(this.userId(req), bookId)
   }
 
-  private userId(req: Request) { return Number((req.user as { userId: number }).userId) }
+  private userId(req: Request) {
+    return Number((req.user as { userId: number }).userId)
+  }
 }

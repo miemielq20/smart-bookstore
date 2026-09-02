@@ -14,7 +14,10 @@
       :default-active="activeIndex"
       :router="true"
       :collapse="false"
-      class="sidebar-menu" :default-openeds="openedGroups" @open="onMenuOpen" @close="onMenuClose"
+      class="sidebar-menu"
+      :default-openeds="openedGroups"
+      @open="onMenuOpen"
+      @close="onMenuClose"
       background-color="transparent"
       text-color="rgba(255,255,255,0.6)"
       active-text-color="#ffffff"
@@ -32,11 +35,7 @@
           <span class="menu-group-label">{{ group.name }}</span>
         </template>
 
-        <el-menu-item
-          v-for="item in group.children"
-          :key="item.permissionCode"
-          :index="item.path"
-        >
+        <el-menu-item v-for="item in group.children" :key="item.permissionCode" :index="item.path">
           <span class="menu-item-dot"></span>
           <span>{{ item.name }}</span>
         </el-menu-item>
@@ -62,26 +61,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import { useMenuStore } from "@/stores/sider"
-import { useRouterStore } from "@/stores/route"
-import { storeToRefs } from "pinia"
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useMenuStore } from '@/stores/sider'
+import { useRouterStore } from '@/stores/route'
+import { storeToRefs } from 'pinia'
 import {
   DataAnalysis,
   Reading,
   ShoppingCart,
   Setting,
-  UserFilled, SwitchButton,} from "@element-plus/icons-vue"
-import { ElMessageBox } from "element-plus"
+  UserFilled,
+  SwitchButton,
+} from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 
 /* activeIndex 始终以当前路径匹配，el-menu 的 router 模式自动高亮 */
-const activeIndex = computed(() => route.path === '/' ? '/dashboard/Overview' : route.path)
+const activeIndex = computed(() => (route.path === '/' ? '/dashboard/Overview' : route.path))
 
-const username = ref("超级管理员")
-const role = ref("admin")
+const username = ref('超级管理员')
+const role = ref('admin')
 
 const router = useRouter()
 const menuStore = useMenuStore()
@@ -90,22 +91,20 @@ const routeStore = useRouterStore()
 /* 退出登录 */
 
 function handleLogout() {
-  ElMessageBox.confirm(
-    "确定要退出登录吗？",
-    "退出确认",
-    {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-      roundButton: true,
-    }
-  ).then(() => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("MENU_CACHE")
-    menuStore.clearMenus()
-    routeStore.routerReady = false
-    router.replace("/login")
-  }).catch(() => {})
+  ElMessageBox.confirm('确定要退出登录吗？', '退出确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+    roundButton: true,
+  })
+    .then(() => {
+      localStorage.removeItem('token')
+      localStorage.removeItem('MENU_CACHE')
+      menuStore.clearMenus()
+      routeStore.routerReady = false
+      router.replace('/login')
+    })
+    .catch(() => {})
 }
 const { sidebarMenus } = storeToRefs(menuStore)
 
@@ -138,7 +137,13 @@ const initOpened = () => {
   }
 }
 
-watch(sidebarMenus, () => { if (openedGroups.value.length === 0) initOpened() }, { immediate: true })
+watch(
+  sidebarMenus,
+  () => {
+    if (openedGroups.value.length === 0) initOpened()
+  },
+  { immediate: true },
+)
 
 /* 侧边栏展开/折叠事件 -> 同步到 store */
 function onMenuOpen(key: string) {
@@ -154,7 +159,7 @@ function onMenuClose(key: string) {
 }
 
 function iconComponent(name: string | null) {
-  return iconMap[name ?? ""] ?? Setting
+  return iconMap[name ?? ''] ?? Setting
 }
 </script>
 
@@ -177,12 +182,24 @@ $green-600: #4a7d5a;
   z-index: 100;
   overflow: hidden;
   background-image:
-    repeating-linear-gradient(87deg, transparent, transparent 3px, rgba(0, 0, 0, 0.02) 3px, rgba(0, 0, 0, 0.02) 4px),
-    repeating-linear-gradient(93deg, transparent, transparent 15px, rgba(0, 0, 0, 0.015) 15px, rgba(0, 0, 0, 0.015) 16px),
+    repeating-linear-gradient(
+      87deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.02) 3px,
+      rgba(0, 0, 0, 0.02) 4px
+    ),
+    repeating-linear-gradient(
+      93deg,
+      transparent,
+      transparent 15px,
+      rgba(0, 0, 0, 0.015) 15px,
+      rgba(0, 0, 0, 0.015) 16px
+    ),
     linear-gradient(180deg, $green-800, $green-700 60%, $green-600);
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
@@ -261,7 +278,9 @@ $green-600: #4a7d5a;
     text-transform: uppercase;
     border-radius: 8px;
     margin-bottom: 2px;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
 
     &:hover {
       color: rgba(255, 255, 255, 0.5) !important;
@@ -305,7 +324,7 @@ $green-600: #4a7d5a;
       font-weight: 500;
 
       &::before {
-        content: "";
+        content: '';
         position: absolute;
         left: 8px;
         top: 8px;
@@ -386,9 +405,24 @@ $green-600: #4a7d5a;
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .logout-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.15s; flex-shrink: 0; &:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.08); } }
+    .logout-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      &:hover {
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
 
-  .user-role {
+    .user-role {
       font-size: 11px;
       color: rgba(255, 255, 255, 0.35);
     }

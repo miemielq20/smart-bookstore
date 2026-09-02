@@ -16,19 +16,31 @@ defineProps<{
 
 <style lang="scss" scoped>
 .chart-bars {
-  display: flex; align-items: flex-end; gap: 8px; height: 120px; padding-top: 8px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  padding-top: 8px;
 }
 
 .bar-col {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .bar {
-  width: 100%; border-radius: 4px 4px 0 0; min-height: 8px;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 8px;
   background: linear-gradient(to top, #5a8f6a, #4a7d5a);
 }
 
 .bar-label {
-  text-align: center; font-size: 10px; color: #b0a494; margin-top: 6px;
+  text-align: center;
+  font-size: 10px;
+  color: #b0a494;
+  margin-top: 6px;
 }
 </style>

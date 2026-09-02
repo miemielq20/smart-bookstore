@@ -4,7 +4,13 @@
     <view class="mp-status-bar" :style="mpStatusBarStyle"></view>
     <!-- #endif -->
     <!-- #ifndef MP-WEIXIN -->
-    <u-navbar title="" :bg-color="theme.page" :border="false" :placeholder="true" :safe-area-inset-top="true" />
+    <u-navbar
+      title=""
+      :bg-color="theme.page"
+      :border="false"
+      :placeholder="true"
+      :safe-area-inset-top="true"
+    />
     <!-- #endif -->
     <view class="fixed-head search-fixed-head" :style="fixedHeadStyle">
       <view class="nav-bar">
@@ -69,7 +75,12 @@
       >
         <template #icon>
           <view class="mini-cover" :class="getCoverClass(book.id)">
-            <image v-if="getCoverSrc(book.coverUrl)" class="cover-image" :src="getCoverSrc(book.coverUrl)" mode="aspectFill" />
+            <image
+              v-if="getCoverSrc(book.coverUrl)"
+              class="cover-image"
+              :src="getCoverSrc(book.coverUrl)"
+              mode="aspectFill"
+            />
           </view>
         </template>
         <template #value>
@@ -112,8 +123,35 @@ const fallbackBooks: BookItem[] = [
   createBook(3, '万历十五年', '黄仁宇', 42, 28, 8.9, '制度与人物视角的历史读物'),
 ]
 
-function createBook(id: number, title: string, author: string, price: number, stock: number, rating: number, reading: string): BookItem {
-  return { id, title, author, isbn: null, coverUrl: null, price, originalPrice: null, description: reading, language: '中文', stock, salesCount: 0, viewCount: 0, rating, status: 1, createdAt: '', updatedAt: '', deletedAt: null, reading }
+function createBook(
+  id: number,
+  title: string,
+  author: string,
+  price: number,
+  stock: number,
+  rating: number,
+  reading: string,
+): BookItem {
+  return {
+    id,
+    title,
+    author,
+    isbn: null,
+    coverUrl: null,
+    price,
+    originalPrice: null,
+    description: reading,
+    language: '中文',
+    stock,
+    salesCount: 0,
+    viewCount: 0,
+    rating,
+    status: 1,
+    createdAt: '',
+    updatedAt: '',
+    deletedAt: null,
+    reading,
+  }
 }
 
 const keyword = ref('')
@@ -125,11 +163,18 @@ const currentSort = ref(0)
 const theme = { page: '#F8F4EA' }
 const statusBarHeight = ref(0)
 
-const displayCategories = computed(() => [{ id: 0, name: '全部' }, ...(categories.value.length ? categories.value : fallbackCategories.slice(1))])
+const displayCategories = computed(() => [
+  { id: 0, name: '全部' },
+  ...(categories.value.length ? categories.value : fallbackCategories.slice(1)),
+])
 const displayBooks = computed(() => books.value)
 const mpStatusBarStyle = computed(() => ({ height: `${statusBarHeight.value}px` }))
-const fixedHeadStyle = computed(() => (statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {}))
-const pageStyle = computed(() => (statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 318rpx)` } : {}))
+const fixedHeadStyle = computed(() =>
+  statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {},
+)
+const pageStyle = computed(() =>
+  statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 318rpx)` } : {},
+)
 
 onLoad((options = {}) => {
   initStatusBar()
@@ -150,7 +195,9 @@ function initStatusBar() {
   const systemInfo = uni.getSystemInfoSync()
   const menuButton = wxUni.getMenuButtonBoundingClientRect?.()
   const statusFromMenu = menuButton?.top ? Math.max(menuButton.top - 4, 0) : 0
-  statusBarHeight.value = Math.round(windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20)
+  statusBarHeight.value = Math.round(
+    windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20,
+  )
   // #endif
 }
 
@@ -170,8 +217,8 @@ async function loadBooks() {
       page: 1,
       pageSize: 30,
       status: 1,
-      keyword: keyword.value ,
-      category: activeCategory.value ,
+      keyword: keyword.value,
+      category: activeCategory.value,
       sort: activeSort.sort,
       order: activeSort.order,
     })
@@ -349,10 +396,18 @@ function formatPrice(value: number | string | null) {
   height: 100%;
 }
 
-.cover-1 { background: #8b9d83; }
-.cover-2 { background: #c66b3d; }
-.cover-3 { background: #c08e3a; }
-.cover-0 { background: #b08b6e; }
+.cover-1 {
+  background: #8b9d83;
+}
+.cover-2 {
+  background: #c66b3d;
+}
+.cover-3 {
+  background: #c08e3a;
+}
+.cover-0 {
+  background: #b08b6e;
+}
 
 .price {
   color: #c66b3d;

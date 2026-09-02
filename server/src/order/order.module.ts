@@ -6,5 +6,10 @@ import { AdminOrderController } from './admin-order.controller'
 import { AdminOrderService } from './admin-order.service'
 import { AuthModule } from '../auth/auth.module'
 
-@Module({ imports: [AuthModule], controllers: [OrderController, AdminOrderController], providers: [OrderService, AdminOrderService, OrderRealtimeService], exports: [OrderRealtimeService] })
+@Module({
+  imports: [AuthModule],
+  controllers: [OrderController, AdminOrderController],
+  providers: [OrderService, AdminOrderService, OrderRealtimeService],
+  exports: [OrderRealtimeService],
+})
 export class OrderModule {}

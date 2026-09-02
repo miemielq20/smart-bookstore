@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CaptchaController } from './captcha.controller';
+import { Test, TestingModule } from '@nestjs/testing'
+import { CaptchaController } from './captcha.controller'
 
 describe('CaptchaController', () => {
-  let controller: CaptchaController;
+  let controller: CaptchaController
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CaptchaController],
-    }).compile();
+    }).compile()
 
-    controller = module.get<CaptchaController>(CaptchaController);
-  });
+    controller = module.get<CaptchaController>(CaptchaController)
+  })
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+    expect(controller).toBeDefined()
+  })
+})

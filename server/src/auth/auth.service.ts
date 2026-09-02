@@ -39,9 +39,11 @@ export class AuthService {
     const admin = await this.prisma.users.findFirst({
       where: { username: dto.username, deletedAt: null, status: 1 },
     })
-    const account = admin ? null : await this.prisma.userAccounts.findFirst({
-      where: { username: dto.username, deletedAt: null, status: 1 },
-    })
+    const account = admin
+      ? null
+      : await this.prisma.userAccounts.findFirst({
+          where: { username: dto.username, deletedAt: null, status: 1 },
+        })
     const user = admin ?? account
 
     if (!user || !user.password || !dto.password) {
@@ -61,7 +63,10 @@ export class AuthService {
     if (admin) {
       await this.prisma.users.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
     } else {
-      await this.prisma.userAccounts.update({ where: { id: user.id }, data: { updatedAt: new Date() } })
+      await this.prisma.userAccounts.update({
+        where: { id: user.id },
+        data: { updatedAt: new Date() },
+      })
     }
 
     return this.generateToken(user, admin ? 'admin' : 'user')
@@ -71,34 +76,60 @@ export class AuthService {
     if (dto.password !== dto.confirmPassword) throw new BadRequestException('两次输入的密码不一致')
     const [admin, account] = await Promise.all([
       this.prisma.users.findFirst({ where: { username: dto.username }, select: { id: true } }),
-      this.prisma.userAccounts.findFirst({ where: { username: dto.username }, select: { id: true } }),
+      this.prisma.userAccounts.findFirst({
+        where: { username: dto.username },
+        select: { id: true },
+      }),
     ])
     if (admin || account) throw new ConflictException('账号已存在')
-    if (!await this.captchaService.validate(dto.captchaId, dto.captcha)) {
+    if (!(await this.captchaService.validate(dto.captchaId, dto.captcha))) {
       throw new UnauthorizedException('验证码错误')
     }
     const user = await this.prisma.userAccounts.create({
-      data: { username: dto.username, password: await hashPassword(dto.password), nickname: dto.username },
+      data: {
+        username: dto.username,
+        password: await hashPassword(dto.password),
+        nickname: dto.username,
+      },
     })
     return this.generateToken({ id: user.id, username: user.username, groupId: null }, 'user')
   }
 
   // 按登录账号来源读取资料，兼容后台管理员和商城用户两套账号表。
   async getProfile(userId: number, accountType?: 'admin' | 'user') {
-    const row = accountType === 'admin'
-      ? await this.prisma.users.findUnique({ where: { id: BigInt(userId) } })
-      : await this.prisma.userAccounts.findUnique({ where: { id: BigInt(userId) } })
+    const row =
+      accountType === 'admin'
+        ? await this.prisma.users.findUnique({ where: { id: BigInt(userId) } })
+        : await this.prisma.userAccounts.findUnique({ where: { id: BigInt(userId) } })
     if (!row) throw new UnauthorizedException('账号不存在')
-    return { id: Number(row.id), username: row.username, nickname: row.nickname ?? '', phone: row.phone ?? '', email: row.email ?? '' }
+    return {
+      id: Number(row.id),
+      username: row.username,
+      nickname: row.nickname ?? '',
+      phone: row.phone ?? '',
+      email: row.email ?? '',
+    }
   }
 
   // 仅更新资料字段，避免账号页意外修改登录凭据或权限信息。
   async updateProfile(userId: number, accountType: 'admin' | 'user' | undefined, dto: ProfileDto) {
-    const data = { nickname: dto.nickname ?? '', phone: dto.phone ?? '', email: dto.email ?? '', updatedAt: new Date() }
-    const row = accountType === 'admin'
-      ? await this.prisma.users.update({ where: { id: BigInt(userId) }, data })
-      : await this.prisma.userAccounts.update({ where: { id: BigInt(userId) }, data })
-    return { id: Number(row.id), username: row.username, nickname: row.nickname ?? '', phone: row.phone ?? '', email: row.email ?? '' }
+    const data = {
+      nickname: dto.nickname ?? '',
+      phone: dto.phone ?? '',
+      email: dto.email ?? '',
+      updatedAt: new Date(),
+    }
+    const row =
+      accountType === 'admin'
+        ? await this.prisma.users.update({ where: { id: BigInt(userId) }, data })
+        : await this.prisma.userAccounts.update({ where: { id: BigInt(userId) }, data })
+    return {
+      id: Number(row.id),
+      username: row.username,
+      nickname: row.nickname ?? '',
+      phone: row.phone ?? '',
+      email: row.email ?? '',
+    }
   }
 
   /* 获取用户菜单树（按 group_id） */
@@ -145,7 +176,7 @@ export class AuthService {
         name: m.name,
         path: m.path,
         component: m.component,
-        icon: m.icon, 
+        icon: m.icon,
         permissionCode: m.permissionCode,
         sort: m.sort,
         visible: m.visible,
@@ -178,7 +209,10 @@ export class AuthService {
   }
 
   /* 生成 JWT */
-  private generateToken(user: { id: bigint; username: string; groupId?: number | null }, accountType: 'admin' | 'user') {
+  private generateToken(
+    user: { id: bigint; username: string; groupId?: number | null },
+    accountType: 'admin' | 'user',
+  ) {
     const payload = {
       sub: Number(user.id),
       username: user.username,

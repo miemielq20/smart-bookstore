@@ -11,13 +11,12 @@ interface MenuState {
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
     menus: [],
-    openedGroups: []
+    openedGroups: [],
   }),
-  persist: true ,
+  persist: true,
 
   getters: {
-    sidebarMenus: state =>
-      state.menus.filter(m => m.visible === 1)
+    sidebarMenus: (state) => state.menus.filter((m) => m.visible === 1),
   },
 
   actions: {
@@ -48,6 +47,6 @@ export const useMenuStore = defineStore('menu', {
     setOpenedGroups(groups: string[]) {
       this.openedGroups = groups
       localStorage.setItem('SIDEBAR_OPENED_GROUPS', JSON.stringify(groups))
-    }
-  }
+    },
+  },
 })

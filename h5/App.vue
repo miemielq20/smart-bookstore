@@ -9,7 +9,7 @@ export default {
   onHide() {
     console.log('App Hide')
   },
-}	
+}
 </script>
 
 <style lang="scss">
@@ -19,7 +19,9 @@ export default {
 page {
   background: #f8f4ea;
   color: #2c2416;
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei',
+    sans-serif;
 }
 
 view,

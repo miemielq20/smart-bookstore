@@ -1,9 +1,100 @@
 <template>
   <div class="refunds-page">
-    <div class="page-title"><div><h2>退款管理</h2><div class="sub">处理用户退款申请</div></div></div>
-    <SearchPanel :model="query" @search="handleSearch" @reset="handleReset"><el-form-item label="状态"><el-select v-model="query.status" clearable placeholder="全部状态" style="width:150px"><el-option label="待审核" value="PENDING" /><el-option label="已通过" value="APPROVED" /><el-option label="已拒绝" value="REJECTED" /></el-select></el-form-item></SearchPanel>
-    <el-card class="table-card" shadow="never"><el-table v-loading="loading" :data="refunds" class="refunds-table" empty-text="暂无退款记录"><el-table-column prop="refundNo" label="退款单号" min-width="150" show-overflow-tooltip /><el-table-column prop="orderNo" label="订单号" min-width="145" show-overflow-tooltip /><el-table-column label="用户" min-width="100" show-overflow-tooltip><template #default="{ row }">{{ row.userNickname }}</template></el-table-column><el-table-column label="金额" width="100"><template #default="{ row }"><strong class="price">¥{{ formatPrice(row.amount) }}</strong></template></el-table-column><el-table-column prop="reason" label="退款原因" min-width="120" show-overflow-tooltip /><el-table-column label="状态" width="90" align="center"><template #default="{ row }"><el-tag :type="statusType(row.status)" effect="plain">{{ statusLabel(row.status) }}</el-tag></template></el-table-column><el-table-column label="申请时间" width="155" show-overflow-tooltip><template #default="{ row }">{{ formatDate(row.createdAt) }}</template></el-table-column><el-table-column label="操作" width="250" fixed="right"><template #default="{ row }"><div class="table-actions"><el-button size="small" :icon="View" @click="showDetail(row)">详情</el-button><el-button v-if="row.status === 'PENDING'" size="small" type="primary" @click="approve(row)">通过</el-button><el-button v-if="row.status === 'PENDING'" size="small" type="danger" plain @click="reject(row)">拒绝</el-button></div></template></el-table-column></el-table><div class="pager-row"><el-pagination v-model:current-page="query.page" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10,20,50,100]" layout="total, sizes, prev, pager, next, jumper" background @size-change="loadRefunds" @current-change="loadRefunds" /></div></el-card>
-    <el-dialog v-model="detailVisible" title="退款详情" width="520px"><el-descriptions v-if="selected" :column="1" border><el-descriptions-item label="退款单号">{{ selected.refundNo }}</el-descriptions-item><el-descriptions-item label="订单号">{{ selected.orderNo }}</el-descriptions-item><el-descriptions-item label="用户">{{ selected.userNickname }}</el-descriptions-item><el-descriptions-item label="退款金额">¥{{ formatPrice(selected.amount) }}</el-descriptions-item><el-descriptions-item label="退款原因">{{ selected.reason }}</el-descriptions-item><el-descriptions-item label="处理备注">{{ selected.handlerNote || '暂无' }}</el-descriptions-item></el-descriptions><template #footer><el-button @click="detailVisible=false">关闭</el-button></template></el-dialog>
+    <div class="page-title">
+      <div>
+        <h2>退款管理</h2>
+        <div class="sub">处理用户退款申请</div>
+      </div>
+    </div>
+    <SearchPanel :model="query" @search="handleSearch" @reset="handleReset"
+      ><el-form-item label="状态"
+        ><el-select v-model="query.status" clearable placeholder="全部状态" style="width: 150px"
+          ><el-option label="待审核" value="PENDING" /><el-option
+            label="已通过"
+            value="APPROVED" /><el-option
+            label="已拒绝"
+            value="REJECTED" /></el-select></el-form-item
+    ></SearchPanel>
+    <el-card class="table-card" shadow="never"
+      ><el-table v-loading="loading" :data="refunds" class="refunds-table" empty-text="暂无退款记录"
+        ><el-table-column
+          prop="refundNo"
+          label="退款单号"
+          min-width="150"
+          show-overflow-tooltip
+        /><el-table-column
+          prop="orderNo"
+          label="订单号"
+          min-width="145"
+          show-overflow-tooltip
+        /><el-table-column label="用户" min-width="100" show-overflow-tooltip
+          ><template #default="{ row }">{{ row.userNickname }}</template></el-table-column
+        ><el-table-column label="金额" width="100"
+          ><template #default="{ row }"
+            ><strong class="price">¥{{ formatPrice(row.amount) }}</strong></template
+          ></el-table-column
+        ><el-table-column
+          prop="reason"
+          label="退款原因"
+          min-width="120"
+          show-overflow-tooltip
+        /><el-table-column label="状态" width="90" align="center"
+          ><template #default="{ row }"
+            ><el-tag :type="statusType(row.status)" effect="plain">{{
+              statusLabel(row.status)
+            }}</el-tag></template
+          ></el-table-column
+        ><el-table-column label="申请时间" width="155" show-overflow-tooltip
+          ><template #default="{ row }">{{ formatDate(row.createdAt) }}</template></el-table-column
+        ><el-table-column label="操作" width="250" fixed="right"
+          ><template #default="{ row }"
+            ><div class="table-actions">
+              <el-button size="small" :icon="View" @click="showDetail(row)">详情</el-button
+              ><el-button
+                v-if="row.status === 'PENDING'"
+                size="small"
+                type="primary"
+                @click="approve(row)"
+                >通过</el-button
+              ><el-button
+                v-if="row.status === 'PENDING'"
+                size="small"
+                type="danger"
+                plain
+                @click="reject(row)"
+                >拒绝</el-button
+              >
+            </div></template
+          ></el-table-column
+        ></el-table
+      >
+      <div class="pager-row">
+        <el-pagination
+          v-model:current-page="query.page"
+          v-model:page-size="query.pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          background
+          @size-change="loadRefunds"
+          @current-change="loadRefunds"
+        /></div
+    ></el-card>
+    <el-dialog v-model="detailVisible" title="退款详情" width="520px"
+      ><el-descriptions v-if="selected" :column="1" border
+        ><el-descriptions-item label="退款单号">{{ selected.refundNo }}</el-descriptions-item
+        ><el-descriptions-item label="订单号">{{ selected.orderNo }}</el-descriptions-item
+        ><el-descriptions-item label="用户">{{ selected.userNickname }}</el-descriptions-item
+        ><el-descriptions-item label="退款金额"
+          >¥{{ formatPrice(selected.amount) }}</el-descriptions-item
+        ><el-descriptions-item label="退款原因">{{ selected.reason }}</el-descriptions-item
+        ><el-descriptions-item label="处理备注">{{
+          selected.handlerNote || '暂无'
+        }}</el-descriptions-item></el-descriptions
+      ><template #footer
+        ><el-button @click="detailVisible = false">关闭</el-button></template
+      ></el-dialog
+    >
   </div>
 </template>
 
@@ -16,16 +107,145 @@ import { approveAdminRefundApi, getAdminRefundsApi, rejectAdminRefundApi } from 
 import type { AdminRefundItem } from '@/type/api.response'
 import type { AdminRefundQueryParams } from '@/type/api.request'
 
-const query = reactive<AdminRefundQueryParams>({ page: 1, pageSize: 10, status: undefined }); const refunds = ref<AdminRefundItem[]>([]); const total = ref(0); const loading = ref(false); const detailVisible = ref(false); const selected = ref<AdminRefundItem | null>(null)
+const query = reactive<AdminRefundQueryParams>({ page: 1, pageSize: 10, status: undefined })
+const refunds = ref<AdminRefundItem[]>([])
+const total = ref(0)
+const loading = ref(false)
+const detailVisible = ref(false)
+const selected = ref<AdminRefundItem | null>(null)
 onMounted(loadRefunds)
 // 退款审核完成后重新读取列表，确保状态和处理备注来自数据库。
-async function loadRefunds() { loading.value = true; try { const res = await getAdminRefundsApi(query); refunds.value = res.data.list; total.value = res.data.total; query.page = res.data.page; query.pageSize = res.data.pageSize } catch { ElMessage.error('退款记录加载失败') } finally { loading.value = false } }
-function handleSearch() { query.page = 1; loadRefunds() }; function handleReset() { Object.assign(query, { page:1, pageSize:10, status:undefined }); loadRefunds() }; function showDetail(row: AdminRefundItem) { selected.value = row; detailVisible.value = true }
-async function approve(row: AdminRefundItem) { try { await ElMessageBox.confirm(`确定通过退款申请 ${row.refundNo} 吗？`, '退款审核', { confirmButtonText:'通过', cancelButtonText:'取消', type:'warning' }); const note = await ElMessageBox.prompt('可填写处理备注', '审核备注', { confirmButtonText:'提交', cancelButtonText:'跳过', inputPlaceholder:'处理备注' }).catch(() => ({ value: '' })); await approveAdminRefundApi(row.id, note.value); ElMessage.success('退款审核已通过'); await loadRefunds() } catch { /* 用户取消审核时保持列表不变。 */ } }
-async function reject(row: AdminRefundItem) { const result = await ElMessageBox.prompt('请输入拒绝原因', '拒绝退款', { confirmButtonText:'确认拒绝', cancelButtonText:'取消', inputPlaceholder:'拒绝原因' }).catch(() => null); if (!result || !result.value.trim()) return; try { await rejectAdminRefundApi(row.id, result.value); ElMessage.success('退款申请已拒绝'); await loadRefunds() } catch { ElMessage.error('退款审核失败') } }
-function statusLabel(status: string) { return ({ PENDING:'待审核', APPROVED:'已通过', REJECTED:'已拒绝' } as Record<string,string>)[status] || status }; function statusType(status: string) { return ({ PENDING:'warning', APPROVED:'success', REJECTED:'danger' } as Record<string,string>)[status] || 'info' }; function formatPrice(value: number) { return Number(value || 0).toFixed(2) }; function formatDate(value: string) { return value ? new Date(value).toLocaleString('zh-CN',{ hour12:false }) : '-' }
+// 加载后台退款审核列表。
+async function loadRefunds() {
+  loading.value = true
+  try {
+    const res = await getAdminRefundsApi(query)
+    refunds.value = res.data.list
+    total.value = res.data.total
+    query.page = res.data.page
+    query.pageSize = res.data.pageSize
+  } catch {
+    ElMessage.error('退款记录加载失败')
+  } finally {
+    loading.value = false
+  }
+}
+// 根据退款状态筛选审核记录。
+function handleSearch() {
+  query.page = 1
+  loadRefunds()
+}
+// 重置退款筛选条件。
+function handleReset() {
+  Object.assign(query, { page: 1, pageSize: 10, status: undefined })
+  loadRefunds()
+}
+function showDetail(row: AdminRefundItem) {
+  selected.value = row
+  detailVisible.value = true
+}
+// 通过退款申请并记录审核备注。
+async function approve(row: AdminRefundItem) {
+  try {
+    await ElMessageBox.confirm(`确定通过退款申请 ${row.refundNo} 吗？`, '退款审核', {
+      confirmButtonText: '通过',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const note = await ElMessageBox.prompt('可填写处理备注', '审核备注', {
+      confirmButtonText: '提交',
+      cancelButtonText: '跳过',
+      inputPlaceholder: '处理备注',
+    }).catch(() => ({ value: '' }))
+    await approveAdminRefundApi(row.id, note.value)
+    ElMessage.success('退款审核已通过')
+    await loadRefunds()
+  } catch {
+    /* 用户取消审核时保持列表不变。 */
+  }
+}
+// 填写拒绝原因并拒绝退款申请。
+async function reject(row: AdminRefundItem) {
+  const result = await ElMessageBox.prompt('请输入拒绝原因', '拒绝退款', {
+    confirmButtonText: '确认拒绝',
+    cancelButtonText: '取消',
+    inputPlaceholder: '拒绝原因',
+  }).catch(() => null)
+  if (!result || !result.value.trim()) return
+  try {
+    await rejectAdminRefundApi(row.id, result.value)
+    ElMessage.success('退款申请已拒绝')
+    await loadRefunds()
+  } catch {
+    ElMessage.error('退款审核失败')
+  }
+}
+function statusLabel(status: string) {
+  return (
+    ({ PENDING: '待审核', APPROVED: '已通过', REJECTED: '已拒绝' } as Record<string, string>)[
+      status
+    ] || status
+  )
+}
+function statusType(status: string) {
+  return (
+    ({ PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' } as Record<string, string>)[
+      status
+    ] || 'info'
+  )
+}
+function formatPrice(value: number) {
+  return Number(value || 0).toFixed(2)
+}
+function formatDate(value: string) {
+  return value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '-'
+}
 </script>
 
 <style lang="scss" scoped>
-.refunds-page { color:#2c2416; min-width:0; overflow-x:hidden; }.table-card { border:1px solid rgba(96,108,56,.12); border-radius:8px; background:#faf7f1; }.refunds-table { --el-table-bg-color:#faf7f1; --el-table-tr-bg-color:#faf7f1; --el-table-header-bg-color:#efe9dc; --el-table-row-hover-bg-color:rgba(139,157,131,.18); --el-table-border-color:rgba(96,108,56,.14); }.refunds-table :deep(.el-table__body-wrapper), .refunds-table :deep(.el-table__header-wrapper) { overflow-x:hidden; }.refunds-table :deep(table) { table-layout:fixed; }.price { color:#606c38; }.table-actions { display:flex; flex-wrap:nowrap; align-items:center; gap:4px; white-space:nowrap; }.table-actions :deep(.el-button) { flex:0 0 auto; margin:0; padding:5px 8px; }.pager-row { display:flex; justify-content:flex-end; padding-top:18px; overflow:hidden; }
+.refunds-page {
+  color: #2c2416;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.table-card {
+  border: 1px solid rgba(96, 108, 56, 0.12);
+  border-radius: 8px;
+  background: #faf7f1;
+}
+.refunds-table {
+  --el-table-bg-color: #faf7f1;
+  --el-table-tr-bg-color: #faf7f1;
+  --el-table-header-bg-color: #efe9dc;
+  --el-table-row-hover-bg-color: rgba(139, 157, 131, 0.18);
+  --el-table-border-color: rgba(96, 108, 56, 0.14);
+}
+.refunds-table :deep(.el-table__body-wrapper),
+.refunds-table :deep(.el-table__header-wrapper) {
+  overflow-x: hidden;
+}
+.refunds-table :deep(table) {
+  table-layout: fixed;
+}
+.price {
+  color: #606c38;
+}
+.table-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.table-actions :deep(.el-button) {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 5px 8px;
+}
+.pager-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 18px;
+  overflow: hidden;
+}
 </style>

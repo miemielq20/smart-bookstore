@@ -1,4 +1,4 @@
-﻿import { IsString, MinLength, MaxLength,IsNotEmpty } from 'class-validator'
+﻿import { IsString, MinLength, MaxLength, IsNotEmpty } from 'class-validator'
 
 /* 密码登录 DTO */
 export class PasswordLoginDto {

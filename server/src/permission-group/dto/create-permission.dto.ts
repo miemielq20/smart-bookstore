@@ -1,5 +1,5 @@
 // dto/create-permission.dto.ts
-import { IsString, MinLength, IsOptional, IsNotEmpty,IsArray,IsNumber } from 'class-validator'
+import { IsString, MinLength, IsOptional, IsNotEmpty, IsArray, IsNumber } from 'class-validator'
 
 export class CreatePermissionDto {
   @IsString()

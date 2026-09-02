@@ -19,7 +19,11 @@
         <h3>近7日流量趋势</h3>
         <span class="tag">PV / UV</span>
       </div>
-      <ChartBars :data="[42,58,51,72,80,63,75]" :labels="['周一','周二','周三','周四','周五','周六','周日']" style="height:140px;" />
+      <ChartBars
+        :data="[42, 58, 51, 72, 80, 63, 75]"
+        :labels="['周一', '周二', '周三', '周四', '周五', '周六', '周日']"
+        style="height: 140px"
+      />
     </div>
   </div>
 </template>

@@ -280,7 +280,6 @@ async function handleStatusChange(row: CategoryItem, value: boolean) {
   }
 }
 
-
 //删除分类
 async function handleDelete(row: CategoryItem) {
   try {

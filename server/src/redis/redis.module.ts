@@ -1,8 +1,8 @@
 // src/redis/redis.module.ts
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { createClient } from 'redis';
-import { RedisService } from './redis.service';
+import { Module } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import { createClient } from 'redis'
+import { RedisService } from './redis.service'
 
 @Module({
   imports: [ConfigModule],
@@ -17,11 +17,11 @@ import { RedisService } from './redis.service';
             connectTimeout: 3000,
           },
           password: configService.get('REDIS_PASSWORD') || undefined,
-        });
+        })
 
-        client.on('error', (err) => console.error('Redis Error:', err));
-        await client.connect();
-        return client;
+        client.on('error', (err) => console.error('Redis Error:', err))
+        await client.connect()
+        return client
       },
       inject: [ConfigService],
     },

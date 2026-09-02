@@ -4,8 +4,14 @@
     <view class="mp-status-bar" :style="mpStatusBarStyle"></view>
     <!-- #endif -->
     <!-- #ifndef MP-WEIXIN -->
-    <u-navbar title="" :bg-color="theme.page" :border="false" :placeholder="true" :safe-area-inset-top="true" />
-	<!-- #endif -->
+    <u-navbar
+      title=""
+      :bg-color="theme.page"
+      :border="false"
+      :placeholder="true"
+      :safe-area-inset-top="true"
+    />
+    <!-- #endif -->
     <view class="fixed-head category-fixed-head" :style="fixedHeadStyle">
       <view class="header">
         <view>
@@ -66,7 +72,11 @@
             @click="goBookDetail(book.id)"
           >
             <template #icon>
-              <view class="mini-cover" :class="getCoverClass(book.id)" :style="getCoverStyle(book.coverUrl)"></view>
+              <view
+                class="mini-cover"
+                :class="getCoverClass(book.id)"
+                :style="getCoverStyle(book.coverUrl)"
+              ></view>
             </template>
             <template #value>
               <view class="cell-value">
@@ -116,8 +126,35 @@ const fallbackBooks: BookItem[] = [
   createBook(4, '平凡的世界', '路遥', 108, 12, 9.3, '长篇阅读与套装图书'),
 ]
 
-function createBook(id: number, title: string, author: string, price: number, stock: number, rating: number, reading: string): BookItem {
-  return { id, title, author, isbn: null, coverUrl: null, price, originalPrice: null, description: reading, language: '中文', stock, salesCount: 0, viewCount: 0, rating, status: 1, createdAt: '', updatedAt: '', deletedAt: null, reading }
+function createBook(
+  id: number,
+  title: string,
+  author: string,
+  price: number,
+  stock: number,
+  rating: number,
+  reading: string,
+): BookItem {
+  return {
+    id,
+    title,
+    author,
+    isbn: null,
+    coverUrl: null,
+    price,
+    originalPrice: null,
+    description: reading,
+    language: '中文',
+    stock,
+    salesCount: 0,
+    viewCount: 0,
+    rating,
+    status: 1,
+    createdAt: '',
+    updatedAt: '',
+    deletedAt: null,
+    reading,
+  }
 }
 
 const theme = { page: '#F8F4EA' }
@@ -128,11 +165,17 @@ const books = ref<BookItem[]>([])
 const total = ref(0)
 const currentSort = ref(0)
 
-const displayCategories = computed(() => (categories.value.length ? categories.value : fallbackCategories))
+const displayCategories = computed(() =>
+  categories.value.length ? categories.value : fallbackCategories,
+)
 const displayBooks = computed(() => (books.value.length ? books.value : fallbackBooks))
 const mpStatusBarStyle = computed(() => ({ height: `${statusBarHeight.value}px` }))
-const fixedHeadStyle = computed(() => (statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {}))
-const pageStyle = computed(() => (statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 170rpx)` } : {}))
+const fixedHeadStyle = computed(() =>
+  statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {},
+)
+const pageStyle = computed(() =>
+  statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 170rpx)` } : {},
+)
 
 onLoad(() => {
   initStatusBar()
@@ -150,7 +193,9 @@ function initStatusBar() {
   const systemInfo = uni.getSystemInfoSync()
   const menuButton = wxUni.getMenuButtonBoundingClientRect?.()
   const statusFromMenu = menuButton?.top ? Math.max(menuButton.top - 4, 0) : 0
-  statusBarHeight.value = Math.round(windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20)
+  statusBarHeight.value = Math.round(
+    windowInfo?.statusBarHeight || systemInfo.statusBarHeight || statusFromMenu || 20,
+  )
   // #endif
 }
 
@@ -375,9 +420,18 @@ function formatPrice(value: number | string | null) {
   border-radius: 10rpx;
 }
 
-.spine-a { height: 98rpx; background: #b08b6e; }
-.spine-b { height: 136rpx; background: #c66b3d; }
-.spine-c { height: 78rpx; background: #c08e3a; }
+.spine-a {
+  height: 98rpx;
+  background: #b08b6e;
+}
+.spine-b {
+  height: 136rpx;
+  background: #c66b3d;
+}
+.spine-c {
+  height: 78rpx;
+  background: #c08e3a;
+}
 
 .book-list {
   overflow: hidden;
@@ -399,10 +453,18 @@ function formatPrice(value: number | string | null) {
   box-shadow: inset -14rpx 0 rgba(44, 36, 22, 0.1);
 }
 
-.cover-1 { background-color: #8b9d83; }
-.cover-2 { background-color: #c66b3d; }
-.cover-3 { background-color: #c08e3a; }
-.cover-0 { background-color: #b08b6e; }
+.cover-1 {
+  background-color: #8b9d83;
+}
+.cover-2 {
+  background-color: #c66b3d;
+}
+.cover-3 {
+  background-color: #c08e3a;
+}
+.cover-0 {
+  background-color: #b08b6e;
+}
 
 .cell-value {
   display: flex;

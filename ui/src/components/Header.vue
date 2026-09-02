@@ -26,12 +26,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue"
-import { useRoute, useRouter } from "vue-router"
-import { Bell, Setting } from "@element-plus/icons-vue"
-import { useMenuStore } from "@/stores/sider"
-import { storeToRefs } from "pinia"
-import { ElMessage } from "element-plus"
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Bell, Setting } from '@element-plus/icons-vue'
+import { useMenuStore } from '@/stores/sider'
+import { storeToRefs } from 'pinia'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,26 +46,30 @@ function findBreadcrumb(path: string): { parent: string; current: string; parent
   for (const group of sidebarMenus.value) {
     for (const child of group.children ?? []) {
       if (child.path === path) {
-        return { parent: group.name, current: child.name, parentPath: group.children[0]?.path || "/" }
+        return {
+          parent: group.name,
+          current: child.name,
+          parentPath: group.children[0]?.path || '/',
+        }
       }
     }
   }
-  return { parent: "", current: "", parentPath: "" }
+  return { parent: '', current: '', parentPath: '' }
 }
 
 const breadcrumb = computed(() => findBreadcrumb(route.path))
 const breadcrumbParent = computed(() => breadcrumb.value.parent)
-const breadcrumbParentPath = computed(() => breadcrumb.value.parentPath || "/")
+const breadcrumbParentPath = computed(() => breadcrumb.value.parentPath || '/')
 const breadcrumbCurrent = computed(() => breadcrumb.value.current || route.meta.title || route.path)
 
 /* ====== 通知按钮（占位） ====== */
 function handleNotify() {
-  ElMessage.info("通知功能开发中")
+  ElMessage.info('通知功能开发中')
 }
 
 /* ====== 设置按钮 → 跳转系统设置 ====== */
 function handleSetting() {
-  router.push("/system/AI")
+  router.push('/system/AI')
 }
 </script>
 

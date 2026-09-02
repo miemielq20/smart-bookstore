@@ -1,40 +1,223 @@
 <template>
   <div class="orders-page">
-    <div class="page-title"><div><h2>订单列表</h2><div class="sub">查看和管理所有订单</div></div></div>
-    <div class="stats-grid"><div v-for="item in statItems" :key="item.label" class="stat-item"><span>{{ item.label }}</span><strong>{{ item.value }}</strong></div></div>
+    <div class="page-title">
+      <div>
+        <h2>订单列表</h2>
+        <div class="sub">查看和管理所有订单</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div v-for="item in statItems" :key="item.label" class="stat-item">
+        <span>{{ item.label }}</span
+        ><strong>{{ item.value }}</strong>
+      </div>
+    </div>
     <SearchPanel :model="query" @search="handleSearch" @reset="handleReset">
-      <el-form-item label="关键词"><el-input v-model.trim="query.keyword" clearable placeholder="订单号 / 收货人 / 手机号" :prefix-icon="Search" @keyup.enter="handleSearch" /></el-form-item>
-      <el-form-item label="状态"><el-select v-model="query.status" clearable placeholder="全部状态" style="width: 140px"><el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" /></el-select></el-form-item>
-      <el-form-item label="下单时间"><el-date-picker v-model="dateRange" type="daterange" value-format="YYYY-MM-DD" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" /></el-form-item>
+      <el-form-item label="关键词"
+        ><el-input
+          v-model.trim="query.keyword"
+          clearable
+          placeholder="订单号 / 收货人 / 手机号"
+          :prefix-icon="Search"
+          @keyup.enter="handleSearch"
+      /></el-form-item>
+      <el-form-item label="状态"
+        ><el-select v-model="query.status" clearable placeholder="全部状态" style="width: 140px"
+          ><el-option
+            v-for="item in statusOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value" /></el-select
+      ></el-form-item>
+      <el-form-item label="下单时间"
+        ><el-date-picker
+          v-model="dateRange"
+          type="daterange"
+          value-format="YYYY-MM-DD"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+      /></el-form-item>
     </SearchPanel>
     <el-card class="table-card" shadow="never">
-      <el-table v-loading="loading" :data="orders" row-key="id" class="orders-table" empty-text="暂无订单数据">
+      <el-table
+        v-loading="loading"
+        :data="orders"
+        row-key="id"
+        class="orders-table"
+        empty-text="暂无订单数据"
+      >
         <el-table-column prop="orderNo" label="订单号" min-width="190" />
-        <el-table-column label="用户" min-width="150"><template #default="{ row }"><div>{{ row.userNickname }}</div><small>{{ row.userPhone || '未填写手机号' }}</small></template></el-table-column>
-        <el-table-column label="收货信息" min-width="170"><template #default="{ row }"><div>{{ row.receiverName || '-' }}</div><small>{{ row.receiverPhone || '-' }}</small></template></el-table-column>
+        <el-table-column label="用户" min-width="150"
+          ><template #default="{ row }"
+            ><div>{{ row.userNickname }}</div>
+            <small>{{ row.userPhone || '未填写手机号' }}</small></template
+          ></el-table-column
+        >
+        <el-table-column label="收货信息" min-width="170"
+          ><template #default="{ row }"
+            ><div>{{ row.receiverName || '-' }}</div>
+            <small>{{ row.receiverPhone || '-' }}</small></template
+          ></el-table-column
+        >
         <el-table-column prop="itemCount" label="商品件数" width="100" align="center" />
-        <el-table-column label="金额" width="120" align="right"><template #default="{ row }"><strong class="price">¥{{ formatPrice(row.totalAmount) }}</strong></template></el-table-column>
-        <el-table-column label="状态" width="110" align="center"><template #default="{ row }"><el-tag :type="statusType(row.status)" effect="plain">{{ statusLabel(row.status) }}</el-tag></template></el-table-column>
-        <el-table-column label="下单时间" width="175"><template #default="{ row }">{{ formatDate(row.createdAt) }}</template></el-table-column>
-        <el-table-column label="操作" width="280" fixed="right"><template #default="{ row }"><div class="table-actions"><el-button size="small" :icon="View" @click="openDetail(row.id)">详情</el-button><el-button v-if="row.status === 'AFTER_SALE'" size="small" type="warning" @click="openAfterSaleActions(row)">售后操作</el-button><el-button v-if="row.status === 'PAID'" size="small" type="primary" :icon="Van" @click="openShip(row)">发货</el-button><el-button v-if="row.status === 'PENDING' || row.status === 'PAID'" size="small" type="danger" plain :icon="Close" @click="cancelOrder(row)">取消订单</el-button></div></template></el-table-column>
+        <el-table-column label="金额" width="120" align="right"
+          ><template #default="{ row }"
+            ><strong class="price">¥{{ formatPrice(row.totalAmount) }}</strong></template
+          ></el-table-column
+        >
+        <el-table-column label="状态" width="110" align="center"
+          ><template #default="{ row }"
+            ><el-tag :type="statusType(row.status)" effect="plain">{{
+              statusLabel(row.status)
+            }}</el-tag></template
+          ></el-table-column
+        >
+        <el-table-column label="下单时间" width="175"
+          ><template #default="{ row }">{{ formatDate(row.createdAt) }}</template></el-table-column
+        >
+        <el-table-column label="操作" width="280" fixed="right"
+          ><template #default="{ row }"
+            ><div class="table-actions">
+              <el-button size="small" :icon="View" @click="openDetail(row.id)">详情</el-button
+              ><el-button
+                v-if="row.status === 'AFTER_SALE'"
+                size="small"
+                type="warning"
+                @click="openAfterSaleActions(row)"
+                >售后操作</el-button
+              ><el-button
+                v-if="row.status === 'PAID'"
+                size="small"
+                type="primary"
+                :icon="Van"
+                @click="openShip(row)"
+                >发货</el-button
+              ><el-button
+                v-if="row.status === 'PENDING' || row.status === 'PAID'"
+                size="small"
+                type="danger"
+                plain
+                :icon="Close"
+                @click="cancelOrder(row)"
+                >取消订单</el-button
+              >
+            </div></template
+          ></el-table-column
+        >
       </el-table>
-      <div class="pager-row"><el-pagination v-model:current-page="query.page" v-model:page-size="query.pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper" background @size-change="loadOrders" @current-change="loadOrders" /></div>
+      <div class="pager-row">
+        <el-pagination
+          v-model:current-page="query.page"
+          v-model:page-size="query.pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          background
+          @size-change="loadOrders"
+          @current-change="loadOrders"
+        />
+      </div>
     </el-card>
     <el-dialog v-model="detailVisible" title="订单详情" width="760px" destroy-on-close>
       <el-skeleton v-if="detailLoading" :rows="8" animated />
       <template v-else-if="detail">
-        <div class="detail-head"><div><b>{{ detail.orderNo }}</b><el-tag class="detail-status" :type="statusType(detail.status)" effect="plain">{{ statusLabel(detail.status) }}</el-tag></div><span>{{ formatDate(detail.createdAt) }}</span></div>
-        <el-descriptions :column="2" border><el-descriptions-item label="用户">{{ detail.userNickname }} / {{ detail.userPhone || '-' }}</el-descriptions-item><el-descriptions-item label="订单金额">¥{{ formatPrice(detail.totalAmount) }}</el-descriptions-item><el-descriptions-item label="收货人">{{ detail.address.receiverName || '-' }}</el-descriptions-item><el-descriptions-item label="收货电话">{{ detail.address.receiverPhone || '-' }}</el-descriptions-item><el-descriptions-item label="收货地址" :span="2">{{ addressText(detail.address) }}</el-descriptions-item><el-descriptions-item label="物流单号">{{ detail.trackingNo || '未发货' }}</el-descriptions-item><el-descriptions-item label="订单备注">{{ detail.remark || '暂无备注' }}</el-descriptions-item></el-descriptions>
-        <h4>商品信息</h4><el-table :data="detail.items" size="small" border><el-table-column label="商品" min-width="300"><template #default="{ row }"><div class="detail-book"><el-image v-if="row.book.coverUrl" :src="row.book.coverUrl" fit="cover" /><span>{{ row.book.title || `图书 #${row.bookId}` }}</span></div></template></el-table-column><el-table-column prop="price" label="单价" width="120"><template #default="{ row }">¥{{ formatPrice(row.price) }}</template></el-table-column><el-table-column prop="quantity" label="数量" width="90" align="center" /></el-table>
-        <h4>支付记录</h4><div v-if="detail.payments.length" class="record-list"><div v-for="payment in detail.payments" :key="payment.paymentNo"><span>{{ payment.paymentNo }} / {{ payment.method }}</span><span>¥{{ formatPrice(payment.amount) }} · {{ payment.status }}</span></div></div><el-empty v-else description="暂无支付记录" :image-size="50" />
-        <h4>退款记录</h4><div v-if="detail.refunds.length" class="record-list"><div v-for="refund in detail.refunds" :key="refund.id"><span>{{ refund.refundNo }} / {{ refund.reason }}</span><span>¥{{ formatPrice(refund.amount) }} · {{ refund.status }}</span></div></div><el-empty v-else description="暂无退款记录" :image-size="50" />
+        <div class="detail-head">
+          <div>
+            <b>{{ detail.orderNo }}</b
+            ><el-tag class="detail-status" :type="statusType(detail.status)" effect="plain">{{
+              statusLabel(detail.status)
+            }}</el-tag>
+          </div>
+          <span>{{ formatDate(detail.createdAt) }}</span>
+        </div>
+        <el-descriptions :column="2" border
+          ><el-descriptions-item label="用户"
+            >{{ detail.userNickname }} / {{ detail.userPhone || '-' }}</el-descriptions-item
+          ><el-descriptions-item label="订单金额"
+            >¥{{ formatPrice(detail.totalAmount) }}</el-descriptions-item
+          ><el-descriptions-item label="收货人">{{
+            detail.address.receiverName || '-'
+          }}</el-descriptions-item
+          ><el-descriptions-item label="收货电话">{{
+            detail.address.receiverPhone || '-'
+          }}</el-descriptions-item
+          ><el-descriptions-item label="收货地址" :span="2">{{
+            addressText(detail.address)
+          }}</el-descriptions-item
+          ><el-descriptions-item label="物流单号">{{
+            detail.trackingNo || '未发货'
+          }}</el-descriptions-item
+          ><el-descriptions-item label="订单备注">{{
+            detail.remark || '暂无备注'
+          }}</el-descriptions-item></el-descriptions
+        >
+        <h4>商品信息</h4>
+        <el-table :data="detail.items" size="small" border
+          ><el-table-column label="商品" min-width="300"
+            ><template #default="{ row }"
+              ><div class="detail-book">
+                <el-image v-if="row.book.coverUrl" :src="row.book.coverUrl" fit="cover" /><span>{{
+                  row.book.title || `图书 #${row.bookId}`
+                }}</span>
+              </div></template
+            ></el-table-column
+          ><el-table-column prop="price" label="单价" width="120"
+            ><template #default="{ row }">¥{{ formatPrice(row.price) }}</template></el-table-column
+          ><el-table-column prop="quantity" label="数量" width="90" align="center"
+        /></el-table>
+        <h4>支付记录</h4>
+        <div v-if="detail.payments.length" class="record-list">
+          <div v-for="payment in detail.payments" :key="payment.paymentNo">
+            <span>{{ payment.paymentNo }} / {{ payment.method }}</span
+            ><span>¥{{ formatPrice(payment.amount) }} · {{ payment.status }}</span>
+          </div>
+        </div>
+        <el-empty v-else description="暂无支付记录" :image-size="50" />
+        <h4>退款记录</h4>
+        <div v-if="detail.refunds.length" class="record-list">
+          <div v-for="refund in detail.refunds" :key="refund.id">
+            <span>{{ refund.refundNo }} / {{ refund.reason }}</span
+            ><span>¥{{ formatPrice(refund.amount) }} · {{ refund.status }}</span>
+          </div>
+        </div>
+        <el-empty v-else description="暂无退款记录" :image-size="50" />
       </template>
-      <template #footer><el-button @click="detailVisible = false">关闭</el-button><el-button v-if="detail && detail.status === 'AFTER_SALE'" type="warning" @click="openAfterSaleActions(detail)">售后操作</el-button><el-button v-if="detail && (detail.status === 'PENDING' || detail.status === 'PAID')" type="danger" plain @click="detail && cancelOrder(detail)">取消订单</el-button><el-button v-if="detail && detail.status === 'PAID'" type="primary" @click="detail && openShip(detail)">发货</el-button><el-button v-if="detail" :icon="Edit" @click="editRemark(detail)">编辑备注</el-button></template>
+      <template #footer
+        ><el-button @click="detailVisible = false">关闭</el-button
+        ><el-button
+          v-if="detail && detail.status === 'AFTER_SALE'"
+          type="warning"
+          @click="openAfterSaleActions(detail)"
+          >售后操作</el-button
+        ><el-button
+          v-if="detail && (detail.status === 'PENDING' || detail.status === 'PAID')"
+          type="danger"
+          plain
+          @click="detail && cancelOrder(detail)"
+          >取消订单</el-button
+        ><el-button
+          v-if="detail && detail.status === 'PAID'"
+          type="primary"
+          @click="detail && openShip(detail)"
+          >发货</el-button
+        ><el-button v-if="detail" :icon="Edit" @click="editRemark(detail)"
+          >编辑备注</el-button
+        ></template
+      >
     </el-dialog>
     <el-dialog v-model="afterSaleVisible" title="售后订单操作" width="420px" destroy-on-close>
       <template v-if="afterSaleOrder">
-        <div class="after-sale-summary"><strong>{{ afterSaleOrder.orderNo }}</strong><span>当前状态：售后中</span></div>
-        <div class="after-sale-actions"><el-button type="primary" @click="reshipAfterSale(afterSaleOrder)">重新发货</el-button><el-button type="danger" plain @click="rejectAfterSale(afterSaleOrder)">拒绝售后</el-button><el-button type="warning" @click="approveAfterSale(afterSaleOrder)">转退款</el-button></div>
+        <div class="after-sale-summary">
+          <strong>{{ afterSaleOrder.orderNo }}</strong
+          ><span>当前状态：售后中</span>
+        </div>
+        <div class="after-sale-actions">
+          <el-button type="primary" @click="reshipAfterSale(afterSaleOrder)">重新发货</el-button
+          ><el-button type="danger" plain @click="rejectAfterSale(afterSaleOrder)"
+            >拒绝售后</el-button
+          ><el-button type="warning" @click="approveAfterSale(afterSaleOrder)">转退款</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -45,34 +228,422 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Close, Edit, Search, Van, View } from '@element-plus/icons-vue'
 import SearchPanel from '@/components/common/SearchPanel.vue'
-import { approveAdminAfterSaleApi, cancelAdminOrderApi, getAdminOrderApi, getAdminOrderStatsApi, getAdminOrdersApi, rejectAdminAfterSaleApi, reshipAdminAfterSaleApi, shipAdminOrderApi, updateAdminOrderRemarkApi } from '@/api/api'
+import {
+  approveAdminAfterSaleApi,
+  cancelAdminOrderApi,
+  getAdminOrderApi,
+  getAdminOrderStatsApi,
+  getAdminOrdersApi,
+  rejectAdminAfterSaleApi,
+  reshipAdminAfterSaleApi,
+  shipAdminOrderApi,
+  updateAdminOrderRemarkApi,
+} from '@/api/api'
 import type { AdminOrderDetail, AdminOrderItem, AdminOrderStats } from '@/type/api.response'
 import type { AdminOrderQueryParams } from '@/type/api.request'
 
-const statusOptions = [{ value: 'PENDING', label: '待付款' }, { value: 'PAID', label: '待发货' }, { value: 'SHIPPED', label: '待收货' }, { value: 'COMPLETED', label: '已完成' }, { value: 'AFTER_SALE', label: '售后中' }, { value: 'REFUNDING', label: '退款中' }, { value: 'REFUNDED', label: '已退款' }, { value: 'REJECTED', label: '退款驳回' }, { value: 'CANCELLED', label: '已取消' }]
-const query = reactive<AdminOrderQueryParams>({ page: 1, pageSize: 10, keyword: '', status: undefined }); const dateRange = ref<string[]>([]); const orders = ref<AdminOrderItem[]>([]); const total = ref(0); const loading = ref(false); const stats = ref<AdminOrderStats>({ totalCount: 0, pendingCount: 0, paidCount: 0, shippedCount: 0, completedCount: 0, cancelledCount: 0, afterSaleCount: 0, refundingCount: 0, todayCount: 0, todayAmount: 0 }); const detailVisible = ref(false); const detailLoading = ref(false); const detail = ref<AdminOrderDetail | null>(null)
-const afterSaleVisible = ref(false); const afterSaleOrder = ref<AdminOrderItem | AdminOrderDetail | null>(null)
-const statItems = computed(() => [{ label: '全部订单', value: stats.value.totalCount }, { label: '待付款', value: stats.value.pendingCount }, { label: '待发货', value: stats.value.paidCount }, { label: '待收货', value: stats.value.shippedCount }, { label: '售后中', value: stats.value.afterSaleCount }, { label: '退款中', value: stats.value.refundingCount }, { label: '今日订单', value: `${stats.value.todayCount} / ¥${formatPrice(stats.value.todayAmount)}` }])
+const statusOptions = [
+  { value: 'PENDING', label: '待付款' },
+  { value: 'PAID', label: '待发货' },
+  { value: 'SHIPPED', label: '待收货' },
+  { value: 'COMPLETED', label: '已完成' },
+  { value: 'AFTER_SALE', label: '售后中' },
+  { value: 'REFUNDING', label: '退款中' },
+  { value: 'REFUNDED', label: '已退款' },
+  { value: 'REJECTED', label: '退款驳回' },
+  { value: 'CANCELLED', label: '已取消' },
+]
+const query = reactive<AdminOrderQueryParams>({
+  page: 1,
+  pageSize: 10,
+  keyword: '',
+  status: undefined,
+})
+const dateRange = ref<string[]>([])
+const orders = ref<AdminOrderItem[]>([])
+const total = ref(0)
+const loading = ref(false)
+const stats = ref<AdminOrderStats>({
+  totalCount: 0,
+  pendingCount: 0,
+  paidCount: 0,
+  shippedCount: 0,
+  completedCount: 0,
+  cancelledCount: 0,
+  afterSaleCount: 0,
+  refundingCount: 0,
+  todayCount: 0,
+  todayAmount: 0,
+})
+const detailVisible = ref(false)
+const detailLoading = ref(false)
+const detail = ref<AdminOrderDetail | null>(null)
+const afterSaleVisible = ref(false)
+const afterSaleOrder = ref<AdminOrderItem | AdminOrderDetail | null>(null)
+const statItems = computed(() => [
+  { label: '全部订单', value: stats.value.totalCount },
+  { label: '待付款', value: stats.value.pendingCount },
+  { label: '待发货', value: stats.value.paidCount },
+  { label: '待收货', value: stats.value.shippedCount },
+  { label: '售后中', value: stats.value.afterSaleCount },
+  { label: '退款中', value: stats.value.refundingCount },
+  {
+    label: '今日订单',
+    value: `${stats.value.todayCount} / ¥${formatPrice(stats.value.todayAmount)}`,
+  },
+])
 
-onMounted(() => { loadOrders(); loadStats() })
+onMounted(() => {
+  loadOrders()
+  loadStats()
+})
 // 每次进入页面都从数据库读取列表和统计，避免后台页面显示旧状态。
-async function loadOrders() { loading.value = true; try { const res = await getAdminOrdersApi({ ...query, dateFrom: dateRange.value[0], dateTo: dateRange.value[1] }); orders.value = res.data.list; total.value = res.data.total; query.page = res.data.page; query.pageSize = res.data.pageSize } catch { ElMessage.error('订单加载失败') } finally { loading.value = false } }
-async function loadStats() { try { stats.value = (await getAdminOrderStatsApi()).data } catch { ElMessage.error('订单统计加载失败') } }
-function handleSearch() { query.page = 1; loadOrders() }; function handleReset() { Object.assign(query, { page: 1, pageSize: 10, keyword: '', status: undefined }); dateRange.value = []; loadOrders() }
-async function openDetail(id: number) { detailVisible.value = true; detailLoading.value = true; try { detail.value = (await getAdminOrderApi(id)).data } catch { ElMessage.error('订单详情加载失败'); detailVisible.value = false } finally { detailLoading.value = false } }
-async function refreshAfterWrite() { await Promise.all([loadOrders(), loadStats()]); if (detail.value) { try { detail.value = (await getAdminOrderApi(detail.value.id)).data } catch { detailVisible.value = false } } }
-async function openShip(row: AdminOrderItem | AdminOrderDetail) { const result = await ElMessageBox.prompt('请输入物流单号', '订单发货', { confirmButtonText: '确认发货', cancelButtonText: '取消', inputPlaceholder: '物流单号' }).catch(() => null); if (!result || !result.value.trim()) return; try { await shipAdminOrderApi(row.id, result.value); ElMessage.success('发货成功'); await refreshAfterWrite() } catch { ElMessage.error('发货失败') } }
-async function cancelOrder(row: AdminOrderItem | AdminOrderDetail) { try { await ElMessageBox.confirm(`确定取消订单 ${row.orderNo} 吗？取消后库存会自动恢复。`, '取消订单', { confirmButtonText: '确定取消', cancelButtonText: '返回', type: 'warning', confirmButtonClass: 'el-button--danger' }); await cancelAdminOrderApi(row.id); ElMessage.success('订单已取消'); await refreshAfterWrite() } catch { /* 用户取消确认时保持当前页面。 */ } }
-async function approveAfterSale(row: AdminOrderItem | AdminOrderDetail) { try { await ElMessageBox.confirm(`确定将订单 ${row.orderNo} 转入退款审核吗？`, '处理售后申请', { confirmButtonText: '确认处理', cancelButtonText: '取消', type: 'warning' }); await approveAdminAfterSaleApi(row.id); afterSaleVisible.value = false; ElMessage.success('售后申请已转入退款审核'); await refreshAfterWrite() } catch { /* 用户取消确认时保持当前页面。 */ } }
-async function rejectAfterSale(row: AdminOrderItem | AdminOrderDetail) { try { await ElMessageBox.confirm(`确定拒绝订单 ${row.orderNo} 的售后申请吗？`, '拒绝售后', { confirmButtonText: '确认拒绝', cancelButtonText: '取消', type: 'warning', confirmButtonClass: 'el-button--danger' }); await rejectAdminAfterSaleApi(row.id); afterSaleVisible.value = false; ElMessage.success('售后申请已拒绝'); await refreshAfterWrite() } catch { /* 用户取消确认时保持当前页面。 */ } }
-async function reshipAfterSale(row: AdminOrderItem | AdminOrderDetail) { const result = await ElMessageBox.prompt('请输入新的物流单号', '重新发货', { confirmButtonText: '确认发货', cancelButtonText: '取消', inputPlaceholder: '新的物流单号' }).catch(() => null); if (!result || !result.value.trim()) return; try { await reshipAdminAfterSaleApi(row.id, result.value); afterSaleVisible.value = false; ElMessage.success('重新发货成功'); await refreshAfterWrite() } catch { ElMessage.error('重新发货失败') } }
-function openAfterSaleActions(row: AdminOrderItem | AdminOrderDetail) { afterSaleOrder.value = row; afterSaleVisible.value = true }
-async function editRemark(row: AdminOrderDetail) { const result = await ElMessageBox.prompt('请输入订单备注', '编辑备注', { confirmButtonText: '保存', cancelButtonText: '取消', inputValue: row.remark || '', inputType: 'textarea' }).catch(() => null); if (!result) return; try { await updateAdminOrderRemarkApi(row.id, result.value); ElMessage.success('备注已更新'); await refreshAfterWrite() } catch { ElMessage.error('备注更新失败') } }
-function statusLabel(status: string) { return statusOptions.find(item => item.value === status)?.label || status }; function statusType(status: string) { return ({ PENDING:'warning', PAID:'primary', SHIPPED:'info', COMPLETED:'success', AFTER_SALE:'warning', REFUNDING:'danger', REFUNDED:'success', REJECTED:'danger', CANCELLED:'info' } as Record<string, string>)[status] || 'info' }; function formatPrice(value: number) { return Number(value || 0).toFixed(2) }; function formatDate(value: string) { return value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '-' }; function addressText(address: Record<string, string>) { return [address.province, address.city, address.district, address.detail, address.detailAddress, address.address].filter(Boolean).join(' ') || '-' }
+// 加载后台订单分页列表。
+// 加载后台订单分页列表。
+async function loadOrders() {
+  loading.value = true
+  try {
+    const res = await getAdminOrdersApi({
+      ...query,
+      dateFrom: dateRange.value[0],
+      dateTo: dateRange.value[1],
+    })
+    orders.value = res.data.list
+    total.value = res.data.total
+    query.page = res.data.page
+    query.pageSize = res.data.pageSize
+  } catch {
+    ElMessage.error('订单加载失败')
+  } finally {
+    loading.value = false
+  }
+}
+// 加载订单数量和金额统计。
+// 加载订单数量和金额统计。
+async function loadStats() {
+  try {
+    stats.value = (await getAdminOrderStatsApi()).data
+  } catch {
+    ElMessage.error('订单统计加载失败')
+  }
+}
+// 根据当前筛选条件重新查询订单。
+// 根据当前筛选条件重新查询订单。
+function handleSearch() {
+  query.page = 1
+  loadOrders()
+}
+// 重置订单筛选条件并重新加载列表。
+// 重置订单筛选条件并重新加载列表。
+function handleReset() {
+  Object.assign(query, { page: 1, pageSize: 10, keyword: '', status: undefined })
+  dateRange.value = []
+  loadOrders()
+}
+// 打开订单详情，并加载最新订单数据。
+// 打开订单详情，并加载最新订单数据。
+async function openDetail(id: number) {
+  detailVisible.value = true
+  detailLoading.value = true
+  try {
+    detail.value = (await getAdminOrderApi(id)).data
+  } catch {
+    ElMessage.error('订单详情加载失败')
+    detailVisible.value = false
+  } finally {
+    detailLoading.value = false
+  }
+}
+async function refreshAfterWrite() {
+  await Promise.all([loadOrders(), loadStats()])
+  if (detail.value) {
+    try {
+      detail.value = (await getAdminOrderApi(detail.value.id)).data
+    } catch {
+      detailVisible.value = false
+    }
+  }
+}
+// 输入物流单号并提交发货操作。
+// 输入物流单号并提交发货操作。
+async function openShip(row: AdminOrderItem | AdminOrderDetail) {
+  const result = await ElMessageBox.prompt('请输入物流单号', '订单发货', {
+    confirmButtonText: '确认发货',
+    cancelButtonText: '取消',
+    inputPlaceholder: '物流单号',
+  }).catch(() => null)
+  if (!result || !result.value.trim()) return
+  try {
+    await shipAdminOrderApi(row.id, result.value)
+    ElMessage.success('发货成功')
+    await refreshAfterWrite()
+  } catch {
+    ElMessage.error('发货失败')
+  }
+}
+// 确认取消订单，并刷新订单与库存相关展示。
+// 确认取消订单，并刷新订单与库存相关展示。
+async function cancelOrder(row: AdminOrderItem | AdminOrderDetail) {
+  try {
+    await ElMessageBox.confirm(
+      `确定取消订单 ${row.orderNo} 吗？取消后库存会自动恢复。`,
+      '取消订单',
+      {
+        confirmButtonText: '确定取消',
+        cancelButtonText: '返回',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger',
+      },
+    )
+    await cancelAdminOrderApi(row.id)
+    ElMessage.success('订单已取消')
+    await refreshAfterWrite()
+  } catch {
+    /* 用户取消确认时保持当前页面。 */
+  }
+}
+// 审核通过售后申请，将订单转入退款审核。
+// 审核通过售后申请，将订单转入退款审核。
+async function approveAfterSale(row: AdminOrderItem | AdminOrderDetail) {
+  try {
+    await ElMessageBox.confirm(`确定将订单 ${row.orderNo} 转入退款审核吗？`, '处理售后申请', {
+      confirmButtonText: '确认处理',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await approveAdminAfterSaleApi(row.id)
+    afterSaleVisible.value = false
+    ElMessage.success('售后申请已转入退款审核')
+    await refreshAfterWrite()
+  } catch {
+    /* 用户取消确认时保持当前页面。 */
+  }
+}
+// 拒绝售后申请，并恢复订单的正常履约状态。
+// 拒绝售后申请，并恢复订单的正常履约状态。
+async function rejectAfterSale(row: AdminOrderItem | AdminOrderDetail) {
+  try {
+    await ElMessageBox.confirm(`确定拒绝订单 ${row.orderNo} 的售后申请吗？`, '拒绝售后', {
+      confirmButtonText: '确认拒绝',
+      cancelButtonText: '取消',
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+    })
+    await rejectAdminAfterSaleApi(row.id)
+    afterSaleVisible.value = false
+    ElMessage.success('售后申请已拒绝')
+    await refreshAfterWrite()
+  } catch {
+    /* 用户取消确认时保持当前页面。 */
+  }
+}
+async function reshipAfterSale(row: AdminOrderItem | AdminOrderDetail) {
+  const result = await ElMessageBox.prompt('请输入新的物流单号', '重新发货', {
+    confirmButtonText: '确认发货',
+    cancelButtonText: '取消',
+    inputPlaceholder: '新的物流单号',
+  }).catch(() => null)
+  if (!result || !result.value.trim()) return
+  try {
+    await reshipAdminAfterSaleApi(row.id, result.value)
+    afterSaleVisible.value = false
+    ElMessage.success('重新发货成功')
+    await refreshAfterWrite()
+  } catch {
+    ElMessage.error('重新发货失败')
+  }
+}
+function openAfterSaleActions(row: AdminOrderItem | AdminOrderDetail) {
+  afterSaleOrder.value = row
+  afterSaleVisible.value = true
+}
+async function editRemark(row: AdminOrderDetail) {
+  const result = await ElMessageBox.prompt('请输入订单备注', '编辑备注', {
+    confirmButtonText: '保存',
+    cancelButtonText: '取消',
+    inputValue: row.remark || '',
+    inputType: 'textarea',
+  }).catch(() => null)
+  if (!result) return
+  try {
+    await updateAdminOrderRemarkApi(row.id, result.value)
+    ElMessage.success('备注已更新')
+    await refreshAfterWrite()
+  } catch {
+    ElMessage.error('备注更新失败')
+  }
+}
+function statusLabel(status: string) {
+  return statusOptions.find((item) => item.value === status)?.label || status
+}
+function statusType(status: string) {
+  return (
+    (
+      {
+        PENDING: 'warning',
+        PAID: 'primary',
+        SHIPPED: 'info',
+        COMPLETED: 'success',
+        AFTER_SALE: 'warning',
+        REFUNDING: 'danger',
+        REFUNDED: 'success',
+        REJECTED: 'danger',
+        CANCELLED: 'info',
+      } as Record<string, string>
+    )[status] || 'info'
+  )
+}
+function formatPrice(value: number) {
+  return Number(value || 0).toFixed(2)
+}
+function formatDate(value: string) {
+  return value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '-'
+}
+function addressText(address: Record<string, string>) {
+  return (
+    [
+      address.province,
+      address.city,
+      address.district,
+      address.detail,
+      address.detailAddress,
+      address.address,
+    ]
+      .filter(Boolean)
+      .join(' ') || '-'
+  )
+}
 </script>
 
 <style lang="scss" scoped>
-.orders-page { color:#2c2416; min-width:0; overflow-x:hidden; }.stats-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; margin-bottom:16px; }.stat-item { padding:16px; border:1px solid rgba(96,108,56,.12); border-radius:8px; background:#faf7f1; }.stat-item span { display:block; color:#7a6e5e; font-size:12px; }.stat-item strong { display:block; margin-top:8px; font-size:22px; color:#606c38; }.table-card { border:1px solid rgba(96,108,56,.12); border-radius:8px; background:#faf7f1; }.orders-table { --el-table-bg-color:#faf7f1; --el-table-tr-bg-color:#faf7f1; --el-table-header-bg-color:#efe9dc; --el-table-row-hover-bg-color:rgba(139,157,131,.18); --el-table-border-color:rgba(96,108,56,.14); }.orders-table small { color:#8d8170; }.price { color:#606c38; }.table-actions { display:flex; flex-wrap:wrap; gap:6px; }.table-actions :deep(.el-button + .el-button) { margin-left:0; }.pager-row { display:flex; justify-content:flex-end; padding-top:18px; overflow-x:auto; }.detail-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; color:#7a6e5e; }.detail-status { margin-left:10px; }.orders-page h4 { margin:20px 0 10px; font-size:14px; }.detail-book { display:flex; align-items:center; gap:10px; }.detail-book .el-image { width:32px; height:44px; flex:none; }.record-list { border:1px solid #efe9dc; border-radius:4px; }.record-list div { display:flex; justify-content:space-between; padding:10px 12px; border-bottom:1px solid #efe9dc; font-size:12px; }.record-list div:last-child { border-bottom:0; }
-.after-sale-summary { display:flex; justify-content:space-between; padding:14px 16px; border:1px solid #efe9dc; border-radius:6px; background:#faf7f1; color:#7a6e5e; }.after-sale-summary strong { color:#2c2416; }.after-sale-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px; }.after-sale-actions :deep(.el-button) { width:100%; margin:0; }
-@media (max-width:1100px) { .stats-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } } @media (max-width:700px) { .stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+.orders-page {
+  color: #2c2416;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-item {
+  padding: 16px;
+  border: 1px solid rgba(96, 108, 56, 0.12);
+  border-radius: 8px;
+  background: #faf7f1;
+}
+.stat-item span {
+  display: block;
+  color: #7a6e5e;
+  font-size: 12px;
+}
+.stat-item strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 22px;
+  color: #606c38;
+}
+.table-card {
+  border: 1px solid rgba(96, 108, 56, 0.12);
+  border-radius: 8px;
+  background: #faf7f1;
+}
+.orders-table {
+  --el-table-bg-color: #faf7f1;
+  --el-table-tr-bg-color: #faf7f1;
+  --el-table-header-bg-color: #efe9dc;
+  --el-table-row-hover-bg-color: rgba(139, 157, 131, 0.18);
+  --el-table-border-color: rgba(96, 108, 56, 0.14);
+}
+.orders-table small {
+  color: #8d8170;
+}
+.price {
+  color: #606c38;
+}
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.table-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
+}
+.pager-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 18px;
+  overflow-x: auto;
+}
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  color: #7a6e5e;
+}
+.detail-status {
+  margin-left: 10px;
+}
+.orders-page h4 {
+  margin: 20px 0 10px;
+  font-size: 14px;
+}
+.detail-book {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.detail-book .el-image {
+  width: 32px;
+  height: 44px;
+  flex: none;
+}
+.record-list {
+  border: 1px solid #efe9dc;
+  border-radius: 4px;
+}
+.record-list div {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #efe9dc;
+  font-size: 12px;
+}
+.record-list div:last-child {
+  border-bottom: 0;
+}
+.after-sale-summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 1px solid #efe9dc;
+  border-radius: 6px;
+  background: #faf7f1;
+  color: #7a6e5e;
+}
+.after-sale-summary strong {
+  color: #2c2416;
+}
+.after-sale-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+.after-sale-actions :deep(.el-button) {
+  width: 100%;
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 </style>

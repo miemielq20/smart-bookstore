@@ -1,6 +1,15 @@
 import { BadRequestException } from '@nestjs/common'
 
-export type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'AFTER_SALE' | 'REFUNDING' | 'REFUNDED' | 'REJECTED'
+export type OrderStatus =
+  | 'PENDING'
+  | 'PAID'
+  | 'SHIPPED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'AFTER_SALE'
+  | 'REFUNDING'
+  | 'REFUNDED'
+  | 'REJECTED'
 
 const transitions: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ['PAID', 'CANCELLED'],
@@ -18,5 +27,6 @@ const transitions: Record<OrderStatus, OrderStatus[]> = {
 
 export function assertOrderStatusTransition(current: OrderStatus, next: OrderStatus) {
   if (current === next) return
-  if (!transitions[current]?.includes(next)) throw new BadRequestException(`不允许订单从${current}变更为${next}`)
+  if (!transitions[current]?.includes(next))
+    throw new BadRequestException(`不允许订单从${current}变更为${next}`)
 }

@@ -35,7 +35,16 @@ export type CaptchaResponse = ApiResponse<CaptchaData>
 export type OrderResponse = ApiResponse<Order>
 export type OrderListResponse = ApiResponse<Order[]>
 export type AddressResponse = ApiResponse<Address[]>
-export interface FavoriteItem { id: number; book: BookItem }
+export interface FavoriteItem {
+  id: number
+  book: BookItem
+}
 export type FavoriteListResponse = ApiResponse<FavoriteItem[]>
-export interface LoginUserProfile { id: number; username: string; nickname: string; phone: string; email: string }
+export interface LoginUserProfile {
+  id: number
+  username: string
+  nickname: string
+  phone: string
+  email: string
+}
 export type ProfileResponse = ApiResponse<LoginUserProfile>

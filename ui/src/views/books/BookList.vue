@@ -76,7 +76,9 @@
         <el-table-column label="价格" width="180" align="center">
           <template #default="{ row }">
             <div class="price">¥{{ formatPrice(row.price) }}</div>
-            <div v-if="row.originalPrice" class="original-price">¥{{ formatPrice(row.originalPrice) }}</div>
+            <div v-if="row.originalPrice" class="original-price">
+              ¥{{ formatPrice(row.originalPrice) }}
+            </div>
           </template>
         </el-table-column>
 
@@ -155,10 +157,22 @@
             <el-input v-model.trim="form.language" placeholder="中文" />
           </el-form-item>
           <el-form-item label="售价" prop="price">
-            <el-input-number v-model="form.price" :min="0" :precision="2" :step="1" controls-position="right" />
+            <el-input-number
+              v-model="form.price"
+              :min="0"
+              :precision="2"
+              :step="1"
+              controls-position="right"
+            />
           </el-form-item>
           <el-form-item label="原价">
-            <el-input-number v-model="form.originalPrice" :min="0" :precision="2" :step="1" controls-position="right" />
+            <el-input-number
+              v-model="form.originalPrice"
+              :min="0"
+              :precision="2"
+              :step="1"
+              controls-position="right"
+            />
           </el-form-item>
           <el-form-item label="库存" prop="stock">
             <el-input-number v-model="form.stock" :min="0" :step="1" controls-position="right" />
@@ -213,7 +227,13 @@
               @keyup.enter="confirmTagInput"
               @blur="confirmTagInput"
             />
-            <el-button v-else size="small" :icon="Plus" class="tag-add-button" @click="showTagInput">
+            <el-button
+              v-else
+              size="small"
+              :icon="Plus"
+              class="tag-add-button"
+              @click="showTagInput"
+            >
               新增标签
             </el-button>
           </div>
@@ -222,7 +242,12 @@
           <el-input v-model.trim="form.reading" placeholder="适合人群或阅读建议" />
         </el-form-item>
         <el-form-item label="描述">
-          <el-input v-model="form.description" type="textarea" :rows="4" placeholder="请输入图书描述" />
+          <el-input
+            v-model="form.description"
+            type="textarea"
+            :rows="4"
+            placeholder="请输入图书描述"
+          />
         </el-form-item>
       </el-form>
 
@@ -330,8 +355,6 @@ onMounted(() => {
   loadCategories()
 })
 
-
-
 async function loadBooks() {
   loading.value = true
   try {
@@ -349,8 +372,6 @@ async function loadCategories() {
   const res = await getCategoryOptionsApi()
   categories.value = res.data
 }
-
-
 
 function handleSearch() {
   query.page = 1
