@@ -101,10 +101,15 @@
         hover-class="tap-soft"
         @tap="goBookDetail(book.id)"
       >
-        <view class="cover" :class="getCoverClass(book.id)" :style="getCoverStyle(book.coverUrl)">
+        <view class="cover-wrap">
+          <view class="cover" :class="getCoverClass(book.id)" :style="getCoverStyle(book.coverUrl)">
           <view v-if="!book.coverUrl" class="cover-lines"
             ><text></text><text></text><text></text
           ></view>
+          </view>
+          <view class="favorite-action" :class="{ active: isFavorited(book.id) }" @tap.stop="toggleFavorite(book.id)">
+            <u-icon name="heart-fill" :color="isFavorited(book.id) ? '#C94F4F' : '#606C38'" size="18" />
+          </view>
         </view>
         <text class="book-title">{{ book.title }}</text>
         <text class="book-author">{{ book.author || '未知作者' }}</text>
@@ -154,7 +159,8 @@
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import AppTabBar from '../../components/AppTabBar/AppTabBar.vue'
-import { getBannersApi, getBooksApi, getCategoryOptionsApi } from '../../services/bookstore'
+import { addFavoriteApi, getBannersApi, getBooksApi, getCategoryOptionsApi, getFavoritesApi, removeFavoriteApi } from '../../services/bookstore'
+import { hasLoginToken } from '../../services/auth'
 import type { BannerItem, BannerLinkType, BookItem, CategoryOption } from '../../types'
 
 const fallbackBanners: BannerItem[] = [
@@ -205,6 +211,7 @@ const banners = ref<BannerItem[]>([])
 const categories = ref<CategoryOption[]>([])
 const hotBooks = ref<BookItem[]>([])
 const newBooks = ref<BookItem[]>([])
+const favoriteIds = ref(new Set<number>())
 
 const displayBanners = computed(() => (banners.value.length ? banners.value : fallbackBanners))
 const displayCategories = computed(() =>
@@ -221,7 +228,7 @@ const fixedHeadStyle = computed(() =>
   mpStatusBarHeight.value ? { top: `${mpStatusBarHeight.value}px` } : {},
 )
 const pageStyle = computed(() =>
-  mpStatusBarHeight.value ? { paddingTop: `calc(${mpStatusBarHeight.value}px + 244rpx)` } : {},
+  mpStatusBarHeight.value ? { paddingTop: '244rpx' } : {},
 )
 onLoad(() => {
   initStatusBar()
@@ -246,14 +253,16 @@ function initStatusBar() {
 
 async function loadHome() {
   try {
-    const [bannerRes, categoryRes, newRes] = await Promise.all([
+    const requests = [
       getBannersApi({ page: 1, pageSize: 5, status: 1 }),
       getCategoryOptionsApi(),
       getBooksApi({ page: 1, pageSize: 3, status: 1, sort: 'createdAt', order: 'desc' }),
-    ])
+    ]
+    const [bannerRes, categoryRes, newRes] = await Promise.all(requests)
     banners.value = bannerRes.data.list
     categories.value = categoryRes.data
     newBooks.value = newRes.data.list
+    await loadFavoriteIds()
     if (categories.value[0]?.name) {
       activeCategory.value = categories.value[0].name
       await loadHotBooks(categories.value[0].name)
@@ -265,6 +274,42 @@ async function loadHome() {
     categories.value = []
     hotBooks.value = []
     newBooks.value = []
+  }
+}
+
+async function loadFavoriteIds() {
+  if (!hasLoginToken()) {
+    favoriteIds.value = new Set()
+    return
+  }
+  try {
+    const response = await getFavoritesApi()
+    favoriteIds.value = new Set(response.data.map((item) => item.book.id))
+  } catch {
+    favoriteIds.value = new Set()
+  }
+}
+
+function isFavorited(id: number) {
+  return favoriteIds.value.has(id)
+}
+
+async function toggleFavorite(id: number) {
+  if (!hasLoginToken()) {
+    uni.navigateTo({ url: `/pages/login/login?redirect=${encodeURIComponent('/pages/index/index')}` })
+    return
+  }
+  const next = !isFavorited(id)
+  try {
+    if (next) await addFavoriteApi(id)
+    else await removeFavoriteApi(id)
+    const updated = new Set(favoriteIds.value)
+    if (next) updated.add(id)
+    else updated.delete(id)
+    favoriteIds.value = updated
+    uni.showToast({ title: next ? '已加入收藏' : '已取消收藏', icon: 'success' })
+  } catch {
+    uni.showToast({ title: '收藏操作失败', icon: 'none' })
   }
 }
 
@@ -655,6 +700,29 @@ function createBook(
   background-repeat: no-repeat;
   background-size: cover;
   box-shadow: inset -20rpx 0 rgba(44, 36, 22, 0.08);
+}
+
+.cover-wrap {
+  position: relative;
+}
+
+.favorite-action {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  display: flex;
+  width: 54rpx;
+  height: 54rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(96, 108, 56, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 253, 247, 0.92);
+}
+
+.favorite-action.active {
+  border-color: rgba(201, 79, 79, 0.16);
+  background: #fff0ef;
 }
 
 .cover-1 {

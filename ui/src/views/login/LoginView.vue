@@ -118,6 +118,20 @@
           </el-button>
         </el-form>
 
+        <div class="test-accounts">
+          <span class="test-accounts-label">已有测试账号</span>
+          <button
+            v-for="account in testAccounts"
+            :key="account.username"
+            type="button"
+            class="test-account"
+            @click="fillTestAccount(account.username)"
+          >
+            <strong>{{ account.username }}</strong>
+            <span>{{ account.label }} · 密码 123456</span>
+          </button>
+        </div>
+
         <div class="register-row">
           还没有管理账号？<a @click="handleRequestAccount">申请开通</a>
         </div>
@@ -147,6 +161,16 @@ const form = reactive({
   captcha: '',
   remember: true,
 })
+const testAccounts = [
+  { username: 'admin', label: '管理员' },
+  { username: 'service', label: '客服' },
+]
+
+// 点击已有测试账号仅填入用户名，密码和验证码仍由登录者输入。
+function fillTestAccount(username: string) {
+  form.username = username
+  form.password = '123456'
+}
 
 const rules: FormRules = {
   username: [{ required: true, message: '请输入管理员账号', trigger: 'blur' }],
@@ -598,6 +622,40 @@ $border-light: #e5dcc8;
       &:hover {
         text-decoration: underline;
       }
+    }
+  }
+
+  .test-accounts {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+    color: $text-secondary;
+    font-size: 12px;
+  }
+
+  .test-accounts-label {
+    width: 100%;
+    color: $text-muted;
+  }
+
+  .test-account {
+    display: flex;
+    min-width: 112px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 8px 12px;
+    border: 1px solid $border-light;
+    border-radius: 8px;
+    background: #fffdf7;
+    color: $text-secondary;
+    cursor: pointer;
+
+    strong {
+      color: $accent-green;
+      font-size: 13px;
     }
   }
 

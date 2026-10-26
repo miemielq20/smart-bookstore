@@ -22,14 +22,16 @@ export const useMenuStore = defineStore('menu', {
   actions: {
     async initMenus() {
       const cache = localStorage.getItem('MENU_CACHE')
-      if (cache) {
-        this.menus = JSON.parse(cache)
-        return
+      try {
+        // 菜单权限可能在后台被删除或调整，登录时始终以服务端最新结果为准。
+        const res = await getMenusApi()
+        this.menus = res.data
+        localStorage.setItem('MENU_CACHE', JSON.stringify(res.data))
+      } catch (error) {
+        // 网络暂时不可用时保留上次缓存，避免已打开的后台完全失去导航。
+        if (cache) this.menus = JSON.parse(cache)
+        else throw error
       }
-
-      const res = await getMenusApi()
-      this.menus = res.data
-      localStorage.setItem('MENU_CACHE', JSON.stringify(res.data))
     },
 
     clearMenus() {

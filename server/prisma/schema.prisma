@@ -459,16 +459,18 @@ model Users {
 }
 
 model UserAccounts {
-  id        BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  username  String    @unique(map: "uk_user_accounts_username") @db.VarChar(50)
-  password  String    @db.VarChar(255)
-  nickname  String?   @db.VarChar(50)
-  phone     String?   @db.VarChar(20)
-  email     String?   @db.VarChar(100)
-  status    Int       @default(1) @db.TinyInt
-  createdAt DateTime  @default(now()) @map("created_at") @db.DateTime(0)
-  updatedAt DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
-  deletedAt DateTime? @map("deleted_at") @db.DateTime(0)
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  username       String    @unique(map: "uk_user_accounts_username") @db.VarChar(50)
+  password       String    @db.VarChar(255)
+  nickname       String?   @db.VarChar(50)
+  avatar         String?   @db.VarChar(500)
+  backgroundImage String?   @map("background_image") @db.VarChar(500)
+  phone          String?   @db.VarChar(20)
+  email          String?   @db.VarChar(100)
+  status          Int       @default(1) @db.TinyInt
+  createdAt       DateTime  @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.DateTime(0)
+  deletedAt       DateTime? @map("deleted_at") @db.DateTime(0)
 
   @@index([deletedAt], map: "idx_user_accounts_deleted_at")
   @@index([status], map: "idx_user_accounts_status")

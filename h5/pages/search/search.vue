@@ -74,13 +74,18 @@
         @click="goBookDetail(book.id)"
       >
         <template #icon>
-          <view class="mini-cover" :class="getCoverClass(book.id)">
-            <image
-              v-if="getCoverSrc(book.coverUrl)"
-              class="cover-image"
-              :src="getCoverSrc(book.coverUrl)"
-              mode="aspectFill"
-            />
+          <view class="book-cover-wrap">
+            <view class="mini-cover" :class="getCoverClass(book.id)">
+              <image
+                v-if="getCoverSrc(book.coverUrl)"
+                class="cover-image"
+                :src="getCoverSrc(book.coverUrl)"
+                mode="aspectFill"
+              />
+            </view>
+            <view class="favorite-action" :class="{ active: isFavorited(book.id) }" @tap.stop="toggleFavorite(book.id)">
+              <u-icon name="heart-fill" :color="isFavorited(book.id) ? '#C94F4F' : '#606C38'" size="18" />
+            </view>
           </view>
         </template>
         <template #value>
@@ -100,7 +105,8 @@
 import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { normalizeAssetUrl } from '../../services/assets'
-import { getBooksApi, getCategoryOptionsApi } from '../../services/bookstore'
+import { addFavoriteApi, getBooksApi, getCategoryOptionsApi, getFavoritesApi, removeFavoriteApi } from '../../services/bookstore'
+import { hasLoginToken } from '../../services/auth'
 import type { BookItem, CategoryOption } from '../../types'
 
 const sortTabs = [
@@ -162,6 +168,7 @@ const total = ref(0)
 const currentSort = ref(0)
 const theme = { page: '#F8F4EA' }
 const statusBarHeight = ref(0)
+const favoriteIds = ref(new Set<number>())
 
 const displayCategories = computed(() => [
   { id: 0, name: '全部' },
@@ -173,7 +180,7 @@ const fixedHeadStyle = computed(() =>
   statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {},
 )
 const pageStyle = computed(() =>
-  statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 318rpx)` } : {},
+  statusBarHeight.value ? { paddingTop: '318rpx' } : {},
 )
 
 onLoad((options = {}) => {
@@ -183,7 +190,41 @@ onLoad((options = {}) => {
   activeCategory.value = query.category ?? ''
   loadCategories()
   loadBooks()
+  loadFavoriteIds()
 })
+
+async function loadFavoriteIds() {
+  if (!hasLoginToken()) return
+  try {
+    const response = await getFavoritesApi()
+    favoriteIds.value = new Set(response.data.map((item) => item.book.id))
+  } catch {
+    favoriteIds.value = new Set()
+  }
+}
+
+function isFavorited(id: number) {
+  return favoriteIds.value.has(id)
+}
+
+async function toggleFavorite(id: number) {
+  if (!hasLoginToken()) {
+    uni.navigateTo({ url: `/pages/login/login?redirect=${encodeURIComponent('/pages/search/search')}` })
+    return
+  }
+  const next = !isFavorited(id)
+  try {
+    if (next) await addFavoriteApi(id)
+    else await removeFavoriteApi(id)
+    const updated = new Set(favoriteIds.value)
+    if (next) updated.add(id)
+    else updated.delete(id)
+    favoriteIds.value = updated
+    uni.showToast({ title: next ? '已加入收藏' : '已取消收藏', icon: 'success' })
+  } catch {
+    uni.showToast({ title: '收藏操作失败', icon: 'none' })
+  }
+}
 
 function initStatusBar() {
   // #ifdef MP-WEIXIN
@@ -380,14 +421,38 @@ function formatPrice(value: number | string | null) {
   background: #fffdf7;
 }
 
+.book-cover-wrap {
+  position: relative;
+  flex: 0 0 116rpx;
+  margin-right: 18rpx;
+}
+
 .mini-cover {
   width: 116rpx;
   height: 156rpx;
-  margin-right: 18rpx;
   overflow: hidden;
   border-radius: 20rpx;
   background: #8b9d83;
   box-shadow: inset -14rpx 0 rgba(44, 36, 22, 0.1);
+}
+
+.favorite-action {
+  position: absolute;
+  top: 12rpx;
+  right: 18rpx;
+  display: flex;
+  width: 54rpx;
+  height: 54rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(96, 108, 56, 0.12);
+  border-radius: 50%;
+  background: rgba(255, 253, 247, 0.92);
+}
+
+.favorite-action.active {
+  border-color: rgba(201, 79, 79, 0.16);
+  background: #fff0ef;
 }
 
 .cover-image {

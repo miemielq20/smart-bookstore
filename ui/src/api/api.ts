@@ -36,8 +36,12 @@ import type {
   AdminOrderListApiResponse,
   AdminOrderStatsApiResponse,
   AdminRefundListApiResponse,
+  DashboardOverviewApiResponse,
+  DashboardTrafficApiResponse,
 } from '@/type/api.response'
 import type { AdminOrderQueryParams, AdminRefundQueryParams } from '@/type/api.request'
+import type { AiConfigUpdate } from '@/type/ai'
+import type { AiConfigApiResponse, AiTestApiResponse } from '@/type/api.response'
 
 // 登录
 export const loginApi = (data: LoginParams): Promise<LoginApiResponse> =>
@@ -170,6 +174,18 @@ export const reshipAdminAfterSaleApi = (
 export const getAdminRefundsApi = (
   params: AdminRefundQueryParams,
 ): Promise<AdminRefundListApiResponse> => request.get('/admin/refunds', { params })
+
+// 数据看板聚合接口：在服务端按时间范围从订单、图书和访问记录实时计算。
+export const getDashboardOverviewApi = (days = 7): Promise<DashboardOverviewApiResponse> =>
+  request.get('/admin/dashboard/overview', { params: { days } })
+export const getDashboardTrafficApi = (days = 7): Promise<DashboardTrafficApiResponse> =>
+  request.get('/admin/dashboard/traffic', { params: { days } })
+
+// AI 配置管理：服务端只返回脱敏后的 API Key。
+export const getAiConfigApi = (): Promise<AiConfigApiResponse> => request.get('/admin/ai/config')
+export const updateAiConfigApi = (data: AiConfigUpdate): Promise<AiConfigApiResponse> =>
+  request.put('/admin/ai/config', data)
+export const testAiConnectionApi = (): Promise<AiTestApiResponse> => request.post('/admin/ai/test')
 export const approveAdminRefundApi = (
   id: number,
   handlerNote = '',

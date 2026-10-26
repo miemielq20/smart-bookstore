@@ -27,12 +27,12 @@ async function main() {
   const servicePwd = serviceBuf.toString('hex')
 
   /* 权限组（先建，user 外键依赖） */
-  const group1 = await prisma.permissionGroup.upsert({
+  const group1 = await prisma.permissionGroups.upsert({
     where: { id: 1 },
     update: {},
     create: { id: 1, name: '超级管理员', description: '全部权限' },
   })
-  const group2 = await prisma.permissionGroup.upsert({
+  const group2 = await prisma.permissionGroups.upsert({
     where: { id: 2 },
     update: {},
     create: { id: 2, name: '客服', description: '订单管理 + 数据看板' },
@@ -40,7 +40,7 @@ async function main() {
   console.log('✓ 权限组: 超级管理员 / 客服')
 
   /* 管理员用户 */
-  const admin = await prisma.user.upsert({
+  const admin = await prisma.users.upsert({
     where: { username: 'admin' },
     update: { password: adminPwd },
     create: {
@@ -52,7 +52,7 @@ async function main() {
     },
   })
 
-  const service = await prisma.user.upsert({
+  const service = await prisma.users.upsert({
     where: { username: 'service' },
     update: { password: servicePwd },
     create: {
@@ -65,6 +65,17 @@ async function main() {
   })
   console.log('✓ 管理员用户: admin / 123456 ')
   console.log('✓ 客服用户: service / 123456')
+
+  // 菜单管理已从后台移除，同时清理旧版本遗留的权限关联。
+  await prisma.$executeRawUnsafe(
+    "DELETE FROM group_menus WHERE menu_id IN (SELECT id FROM menus WHERE permission_code = 'system:menus')",
+  )
+  await prisma.$executeRawUnsafe(
+    "DELETE FROM menu_buttons WHERE menu_id IN (SELECT id FROM menus WHERE permission_code = 'system:menus')",
+  )
+  await prisma.$executeRawUnsafe(
+    "DELETE FROM menus WHERE permission_code = 'system:menus'",
+  )
 
   /* 一级菜单 */
   const menus = [
@@ -103,7 +114,7 @@ async function main() {
   ]
 
   for (const m of menus) {
-    await prisma.menu.upsert({
+    await prisma.menus.upsert({
       where: { id: m.id },
       update: {},
       create: m,
@@ -178,29 +189,58 @@ async function main() {
     },
     {
       parentId: 4,
-      name: '菜单管理',
-      path: '/system/Menus',
-      component: 'views/system/Menus.vue',
-      permissionCode: 'system:menus',
-      sort: 2,
-    },
-    {
-      parentId: 4,
       name: 'AI 设置',
       path: '/system/AI',
       component: 'views/system/AI.vue',
       permissionCode: 'system:ai',
-      sort: 3,
+      sort: 2,
     },
   ]
 
   for (const m of subMenus) {
-    const existing = await prisma.menu.findFirst({ where: { permissionCode: m.permissionCode } })
+    const existing = await prisma.menus.findFirst({ where: { permissionCode: m.permissionCode } })
     if (existing) {
-      await prisma.menu.update({ where: { id: existing.id }, data: m })
+      await prisma.menus.update({ where: { id: existing.id }, data: m })
     } else {
-      await prisma.menu.create({ data: m })
+      await prisma.menus.create({ data: m })
     }
+  }
+
+  /* AI 配置默认值：空 API Key 时继续兼容环境变量。 */
+  const aiConfigs = [
+    {
+      key: 'ai_model',
+      value: process.env.DEEPSEEK_MODEL ?? 'deepseek-chat',
+      type: 'STRING',
+      label: 'AI 模型名称',
+    },
+    {
+      key: 'ai_api_key',
+      value: '',
+      type: 'STRING',
+      label: 'AI API Key',
+    },
+    {
+      key: 'ai_api_base_url',
+      value: process.env.DEEPSEEK_API_BASE_URL ?? 'https://api.deepseek.com/v1',
+      type: 'STRING',
+      label: 'AI API 地址',
+    },
+    { key: 'ai_temperature', value: '0.7', type: 'NUMBER', label: '生成温度' },
+    { key: 'ai_max_tokens', value: '2048', type: 'NUMBER', label: '最大输出 Token' },
+    {
+      key: 'ai_prompt_template',
+      value: '你是一个专业的图书推荐助手。你了解各类图书的内容特点，能根据用户的阅读偏好提供个性化推荐。',
+      type: 'STRING',
+      label: 'AI 提示词模板',
+    },
+  ]
+  for (const item of aiConfigs) {
+    await prisma.systemConfigs.upsert({
+      where: { key: item.key },
+      update: {},
+      create: { ...item, group: 'ai' },
+    })
   }
   /* 按钮权限 */
   const buttons = [
@@ -213,7 +253,7 @@ async function main() {
   ]
 
   for (const b of buttons) {
-    await prisma.menuButton.upsert({
+    await prisma.menuButtons.upsert({
       where: { menuId_permissionCode: { menuId: b.menuId, permissionCode: b.permissionCode } },
       update: {},
       create: b,
@@ -222,9 +262,9 @@ async function main() {
   console.log('✓ 按钮权限: 6 个')
 
   /* 权限分配：超级管理员 → 全部菜单 */
-  const allMenus = await prisma.menu.findMany()
+  const allMenus = await prisma.menus.findMany()
   for (const m of allMenus) {
-    await prisma.groupMenu.upsert({
+    await prisma.groupMenus.upsert({
       where: { groupId_menuId: { groupId: 1, menuId: m.id } },
       update: {},
       create: { groupId: 1, menuId: m.id },
@@ -234,7 +274,7 @@ async function main() {
   /* 权限分配：客服 → 图书管理+ 订单管理 */
   const csMenuIds = [2, 3, 9, 10, 5, 7, 8, 11] // 图书管理,订单管理+列表+退款
   for (const id of csMenuIds) {
-    await prisma.groupMenu.upsert({
+    await prisma.groupMenus.upsert({
       where: { groupId_menuId: { groupId: 2, menuId: id } },
       update: {},
       create: { groupId: 2, menuId: id },
@@ -243,7 +283,7 @@ async function main() {
   console.log('✓ 权限分配完成\n')
 
   console.log('🎉 种子数据初始化完成！')
-  console.log('   管理后台: http://localhost:3000')
+  console.log('   管理后台: http://localhost:3001')
   console.log('   管理员账号: admin / admin123')
 }
 

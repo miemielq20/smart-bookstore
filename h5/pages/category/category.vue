@@ -99,7 +99,8 @@ import { computed, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import AppTabBar from '../../components/AppTabBar/AppTabBar.vue'
 import { normalizeAssetUrl } from '../../services/assets'
-import { getBooksApi, getCategoryOptionsApi } from '../../services/bookstore'
+import { addFavoriteApi, getBooksApi, getCategoryOptionsApi, getFavoritesApi, removeFavoriteApi } from '../../services/bookstore'
+import { hasLoginToken } from '../../services/auth'
 import type { BookItem, CategoryOption } from '../../types'
 
 const sortTabs = [
@@ -164,6 +165,7 @@ const categories = ref<CategoryOption[]>([])
 const books = ref<BookItem[]>([])
 const total = ref(0)
 const currentSort = ref(0)
+const favoriteIds = ref(new Set<number>())
 
 const displayCategories = computed(() =>
   categories.value.length ? categories.value : fallbackCategories,
@@ -174,14 +176,48 @@ const fixedHeadStyle = computed(() =>
   statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {},
 )
 const pageStyle = computed(() =>
-  statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 170rpx)` } : {},
+  statusBarHeight.value ? { paddingTop: '170rpx' } : {},
 )
 
 onLoad(() => {
   initStatusBar()
   loadCategories()
   loadBooks(activeCategory.value)
+  loadFavoriteIds()
 })
+
+async function loadFavoriteIds() {
+  if (!hasLoginToken()) return
+  try {
+    const response = await getFavoritesApi()
+    favoriteIds.value = new Set(response.data.map((item) => item.book.id))
+  } catch {
+    favoriteIds.value = new Set()
+  }
+}
+
+function isFavorited(id: number) {
+  return favoriteIds.value.has(id)
+}
+
+async function toggleFavorite(id: number) {
+  if (!hasLoginToken()) {
+    uni.navigateTo({ url: `/pages/login/login?redirect=${encodeURIComponent('/pages/category/category')}` })
+    return
+  }
+  const next = !isFavorited(id)
+  try {
+    if (next) await addFavoriteApi(id)
+    else await removeFavoriteApi(id)
+    const updated = new Set(favoriteIds.value)
+    if (next) updated.add(id)
+    else updated.delete(id)
+    favoriteIds.value = updated
+    uni.showToast({ title: next ? '已加入收藏' : '已取消收藏', icon: 'success' })
+  } catch {
+    uni.showToast({ title: '收藏操作失败', icon: 'none' })
+  }
+}
 
 function initStatusBar() {
   // #ifdef MP-WEIXIN
@@ -443,7 +479,6 @@ function formatPrice(value: number | string | null) {
 .mini-cover {
   width: 112rpx;
   height: 154rpx;
-  margin-right: 18rpx;
   overflow: hidden;
   border-radius: 20rpx;
   background: #8b9d83;

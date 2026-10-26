@@ -1,0 +1,19 @@
+[Unit]
+Description=Smart Bookstore API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/www/wwwroot/smart_bookstore/server
+ExecStart=/www/server/nodejs/v24.12.0/bin/node dist/src/main.js
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=30
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

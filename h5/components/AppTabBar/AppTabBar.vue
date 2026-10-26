@@ -1,4 +1,5 @@
 <template>
+  <AiAssistant v-if="current === 'home'" />
   <view class="app-tabbar">
     <view
       v-for="item in tabs"
@@ -25,6 +26,9 @@
 </template>
 
 <script lang="ts" setup>
+import { hasLoginToken } from '../../services/auth'
+import AiAssistant from '../AiAssistant/AiAssistant.vue'
+
 type TabKey = 'home' | 'category' | 'cart' | 'mine'
 
 interface TabItem {
@@ -65,6 +69,13 @@ const tabs: TabItem[] = [
 ]
 
 function goTab(item: TabItem) {
+  // 仅购物车和个人中心需要登录，首页与分类页保持游客可浏览。
+  if ((item.key === 'cart' || item.key === 'mine') && !hasLoginToken()) {
+    uni.redirectTo({
+      url: `/pages/login/login?redirect=${encodeURIComponent(item.url)}`,
+    })
+    return
+  }
   uni.redirectTo({ url: item.url })
 }
 </script>
@@ -92,6 +103,7 @@ function goTab(item: TabItem) {
   align-items: center;
   justify-content: center;
   color: #7a6e5e;
+  position: relative;
 }
 
 .tab-item.active {

@@ -25,6 +25,16 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## AI 选书助手
+
+项目已接入 DeepSeek API，后端接口为 `POST /api/ai/chat`，前端会根据数据库中的在售图书返回推荐结果。
+
+1. 在 DeepSeek 控制台创建 API Key。
+2. 将 Key 填入 `server/.env` 的 `DEEPSEEK_API_KEY`。
+3. 启动后端和 H5 页面，点击右下角 AI 助手即可使用。
+
+未配置 Key 时，助手仍会根据数据库热门图书返回基础推荐，不会影响商城浏览。
+
 ## Project setup
 
 ```bash

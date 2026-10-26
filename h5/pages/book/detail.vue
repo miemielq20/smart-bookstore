@@ -8,7 +8,7 @@
       title=""
       :bg-color="theme.page"
       :border="false"
-      :placeholder="true"
+      :placeholder="false"
       :safe-area-inset-top="true"
     />
     <!-- #endif -->
@@ -84,14 +84,15 @@
     </view>
 
     <view class="bottom-bar">
-      <u-button
-        class="fav-btn"
-        plain
-        color="#606C38"
-        icon="heart"
-        :text="favorited ? '取消收藏' : '收藏'"
-        @click="toggleFavorite"
-      />
+      <!-- 收藏状态与数据库同步，收藏后显示红色实心爱心。 -->
+      <view
+        class="favorite-action"
+        :class="{ active: favorited }"
+        :aria-label="favorited ? '取消收藏' : '收藏'"
+        @tap="toggleFavorite"
+      >
+        <u-icon name="heart-fill" :color="favorited ? '#C94F4F' : '#606C38'" size="25" />
+      </view>
       <u-button
         class="cart-btn"
         color="#606C38"
@@ -115,6 +116,7 @@ import {
   getFavoritesApi,
   removeFavoriteApi,
 } from '../../services/bookstore'
+import { hasLoginToken } from '../../services/auth'
 import { normalizeAssetUrl } from '../../services/assets'
 import type { BookItem } from '../../types'
 
@@ -132,7 +134,7 @@ const navBarStyle = computed(() =>
   statusBarHeight.value ? { top: `${statusBarHeight.value}px` } : {},
 )
 const pageStyle = computed(() =>
-  statusBarHeight.value ? { paddingTop: `calc(${statusBarHeight.value}px + 116rpx)` } : {},
+  statusBarHeight.value ? { paddingTop: '116rpx' } : {},
 )
 
 onMounted(() => {
@@ -210,6 +212,12 @@ async function toggleFavorite() {
 
 async function addToCart() {
   if (adding.value || book.value.status !== 1 || book.value.stock < 1) return
+  if (!hasLoginToken()) {
+    uni.navigateTo({
+      url: `/pages/login/login?redirect=${encodeURIComponent(`/pages/book/detail?id=${book.value.id}`)}`,
+    })
+    return
+  }
   adding.value = true
   try {
     await addCartItemApi({ bookId: book.value.id })
@@ -264,10 +272,17 @@ function createBook(
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: calc(212rpx + env(safe-area-inset-top)) 28rpx calc(150rpx + env(safe-area-inset-bottom));
+  padding: calc(212rpx + env(safe-area-inset-top)) 28rpx calc(190rpx + env(safe-area-inset-bottom));
   background: #f8f4ea;
   color: #2c2416;
 }
+
+/* The App navbar is fixed, so reserve only its actual height before the cover. */
+/* #ifdef APP-PLUS */
+.page {
+  padding-top: calc(150rpx + env(safe-area-inset-top));
+}
+/* #endif */
 
 .mp-status-bar {
   position: fixed;
@@ -293,6 +308,10 @@ function createBook(
 }
 
 /* #ifdef MP-WEIXIN */
+.mp-status-bar + .nav-bar {
+  top: 0;
+}
+
 .nav-bar {
   top: 0;
   height: 116rpx;
@@ -333,9 +352,11 @@ function createBook(
 }
 
 .cover-wrap {
+  height: 560rpx;
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 20rpx 0 28rpx;
+  padding: 0;
 }
 
 .detail-cover {
@@ -484,17 +505,46 @@ function createBook(
   bottom: 0;
   left: 0;
   display: flex;
+  align-items: center;
   gap: 18rpx;
-  padding: 18rpx 28rpx 34rpx;
+  padding: 18rpx 28rpx calc(18rpx + env(safe-area-inset-bottom));
   background: #fffdf7;
   box-shadow: 0 -10rpx 30rpx rgba(44, 36, 22, 0.08);
 }
 
-.fav-btn {
-  flex: 0 0 210rpx;
+.favorite-action {
+  display: flex;
+  width: 92rpx;
+  height: 92rpx;
+  flex: 0 0 92rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid rgba(96, 108, 56, 0.18);
+  border-radius: 50%;
+  background: #f8f4ea;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.favorite-action.active {
+  border-color: rgba(201, 79, 79, 0.2);
+  background: #fff0ef;
+}
+
+.favorite-action:active {
+  transform: scale(0.94);
 }
 
 .cart-btn {
+  height: 92rpx;
+  min-height: 92rpx;
   flex: 1;
+  margin: 0;
+  padding: 0;
+  border-radius: 16rpx;
+}
+
+.cart-btn :deep(.u-button__text),
+.cart-btn :deep(.u-icon) {
+  vertical-align: middle;
 }
 </style>

@@ -1,16 +1,31 @@
 import type { RequestMethod } from '../types/request'
 import type { ApiResponse } from '../types/response'
 
+// 真机调试时通过 VITE_API_ORIGIN 指定电脑局域网地址，例如 http://192.168.1.100:3001。
+const API_ORIGIN = (() => {
+  const configuredOrigin = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_API_ORIGIN
+  if (configuredOrigin) return configuredOrigin.replace(/\/$/, '')
+
+  // H5 使用当前页面地址，手机访问时会自动指向运行 H5 的电脑。
+  // #ifdef H5
+  if (typeof location !== 'undefined' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    return `${location.protocol}//${location.host}`
+  }
+  // #endif
+
+  return 'http://192.168.1.100:3001'
+})()
+
 const BASE_URL = (() => {
   // #ifdef H5
   return '/api'
   // #endif
 
   // #ifdef MP-WEIXIN
-  return 'http://localhost:3000/api'
+  return `${API_ORIGIN}/api`
   // #endif
 
-  return 'http://localhost:3000/api'
+  return `${API_ORIGIN}/api`
 })()
 
 interface RequestOptions<TData> {

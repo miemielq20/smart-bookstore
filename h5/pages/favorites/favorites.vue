@@ -21,7 +21,9 @@
           ><text class="author">{{ item.book.author || '未知作者' }}</text
           ><text class="price">¥{{ Number(item.book.price).toFixed(2) }}</text></view
         >
-        <u-icon name="trash" color="#C66B3D" size="20" @tap.stop="remove(item.book.id)" />
+        <view class="favorite-remove" @tap.stop="remove(item.book.id)">
+          <u-icon name="heart-fill" color="#C94F4F" size="20" />
+        </view>
       </view>
     </view>
   </view>
@@ -122,6 +124,17 @@ function remove(bookId: number) {
   min-height: 172rpx;
   padding: 18rpx 22rpx;
   border-bottom: 1rpx solid rgba(159, 147, 129, 0.16);
+}
+
+.favorite-remove {
+  display: flex;
+  width: 52rpx;
+  height: 52rpx;
+  flex: 0 0 52rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff0ef;
 }
 .book-row:last-child {
   border-bottom: 0;

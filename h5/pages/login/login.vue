@@ -8,7 +8,12 @@
       :safe-area-inset-top="true"
     />
 
-    <view class="login-mark"></view>
+    <!-- 使用用户图标作为登录页标识，替换原来的抽象图形。 -->
+    <view class="login-mark">
+      <view class="login-mark-inner">
+        <u-icon name="account" color="#FFFDF7" size="43" />
+      </view>
+    </view>
     <view class="auth-title">
       <text class="title">欢迎回到书城</text>
       <text class="subtitle">手机号、用户名或邮箱登录</text>
@@ -17,6 +22,8 @@
     <view class="field">
       <text>账号</text>
       <view class="field-box">
+        <!-- 账号输入框使用用户图标，替代原来的空白占位区域。 -->
+        <u-icon name="account" color="#A0927F" size="20" />
         <u-input v-model="form.username" placeholder="reader@example.com" border="none" clearable />
       </view>
     </view>
@@ -24,6 +31,7 @@
     <view class="field">
       <text>密码</text>
       <view class="field-box">
+        <u-icon name="lock" color="#A0927F" size="20" />
         <u-input
           v-model="form.password"
           type="password"
@@ -38,6 +46,7 @@
       <text>验证码</text>
       <view class="captcha-row">
         <view class="field-box captcha-input">
+          <u-icon name="more-circle" color="#A0927F" size="20" />
           <u-input v-model="form.captcha" placeholder="输入验证码" border="none" maxlength="4" />
         </view>
         <view class="captcha-img" @tap="refreshCaptcha">
@@ -59,22 +68,39 @@
       <text @tap="showSmsTip">短信验证码登录</text>
       <text @tap="showRegisterTip">创建账号</text>
     </view>
+
+    <view class="test-accounts">
+      <text class="test-accounts-label">已有测试账号</text>
+      <view class="test-account" @tap="fillTestAccount">
+        <u-icon name="account" color="#606C38" size="18" />
+        <text>miemie</text>
+        <text class="test-account-password">密码 123456</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script lang="ts" setup>
 import { onLoad } from '@dcloudio/uni-app'
 import { reactive, ref } from 'vue'
-import { getCaptchaApi, loginApi } from '../../services/auth'
+import { getCaptchaApi, getProfileApi, loginApi } from '../../services/auth'
 
 const form = reactive({ username: '', password: '', captcha: '', captchaId: '' })
 const captcha = reactive({ uuid: '', img: '' })
 const submitting = ref(false)
-const redirect = ref('/pages/cart/cart')
+const redirect = ref('/pages/index/index')
+
+// 点击测试账号仅填入用户名，避免在登录页展示或预填用户密码。
+function fillTestAccount() {
+  form.username = 'miemie'
+  form.password = '123456'
+}
 
 onLoad((options = {}) => {
   const query = options as Record<string, string | undefined>
-  redirect.value = query.redirect ? decodeURIComponent(query.redirect) : '/pages/cart/cart'
+  redirect.value = query.redirect
+    ? decodeURIComponent(query.redirect)
+    : '/pages/index/index'
   refreshCaptcha()
 })
 
@@ -104,7 +130,16 @@ async function submit() {
   try {
     const res = await loginApi({ ...form })
     uni.setStorageSync('token', res.data.accessToken)
-    uni.setStorageSync('user', res.data.user)
+    // 登录后重新读取商城用户资料，确保头像和背景图使用数据库中的长期 URL。
+    let user = res.data.user
+    if (user.accountType === 'user') {
+      try {
+        user = { ...user, ...(await getProfileApi()).data }
+      } catch {
+        /* 资料读取失败时仍保留基础登录信息 */
+      }
+    }
+    uni.setStorageSync('user', user)
     uni.showToast({ title: '登录成功', icon: 'success' })
     setTimeout(() => uni.redirectTo({ url: redirect.value }), 350)
   } catch {
@@ -135,7 +170,7 @@ function goBack() {
 <style lang="scss" scoped>
 .screen {
   min-height: 100vh;
-  padding: 18px 18px 30px;
+  padding: 18px 18px 34px;
   overflow: hidden;
   background: #f7f0e1;
   color: #2c2416;
@@ -176,14 +211,28 @@ function goBack() {
 }
 
 .login-mark {
+  display: flex;
   width: 78px;
   height: 78px;
   margin: 20px auto 18px;
-  border-radius: 30px 30px 30px 10px;
-  background: #606c38;
+  align-items: center;
+  justify-content: center;
+  border-radius: 26px;
+  background: linear-gradient(145deg, #74864c, #526438);
   box-shadow:
-    inset -14px 0 rgba(255, 253, 247, 0.18),
+    inset -8px -8px rgba(44, 66, 50, 0.18),
     0 18px 36px rgba(44, 36, 22, 0.16);
+}
+
+.login-mark-inner {
+  display: flex;
+  width: 55px;
+  height: 55px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 253, 247, 0.3);
+  border-radius: 19px;
+  background: rgba(255, 253, 247, 0.1);
 }
 
 .auth-title {
@@ -219,11 +268,20 @@ function goBack() {
   display: flex;
   min-height: 48px;
   align-items: center;
+  gap: 8px;
   padding: 0 14px;
-  border-radius: 18px;
+  border: 1px solid rgba(96, 108, 56, 0.1);
+  border-radius: 16px;
   background: rgba(255, 253, 247, 0.82);
   color: #776a58;
-  box-shadow: inset 0 0 0 1px rgba(96, 108, 56, 0.12);
+  box-shadow: 0 8px 20px rgba(96, 108, 56, 0.05);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field-box:focus-within {
+  border-color: rgba(96, 108, 56, 0.42);
+  background: #fffdf7;
+  box-shadow: 0 8px 22px rgba(96, 108, 56, 0.1);
 }
 
 .field-box :deep(.u-input) {
@@ -271,11 +329,12 @@ function goBack() {
 .primary-action {
   width: 100%;
   min-height: 50px;
-  margin-top: 18px;
-  border-radius: 20px;
+  margin-top: 22px;
+  border-radius: 16px;
   color: #fffdf7;
   font-size: 15px;
   font-weight: 900;
+  box-shadow: 0 10px 20px rgba(36, 67, 59, 0.16);
 }
 
 .text-link-row {
@@ -285,6 +344,45 @@ function goBack() {
   color: #776a58;
   font-size: 12px;
   font-weight: 700;
+}
+
+.test-accounts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(96, 108, 56, 0.12);
+}
+
+.test-accounts-label {
+  color: #9b8d79;
+  font-size: 11px;
+}
+
+.test-account {
+  display: flex;
+  min-width: 112px;
+  min-height: 44px;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(96, 108, 56, 0.18);
+  border-radius: 18px;
+  background: #fffdf7;
+  color: #606c38;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.test-account-password {
+  width: 100%;
+  color: #9b8d79;
+  font-size: 10px;
+  font-weight: 400;
+  text-align: center;
 }
 
 .auth-footer {

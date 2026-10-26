@@ -10,7 +10,7 @@ export class OrderService {
     private readonly realtime: OrderRealtimeService,
   ) {}
 
-  // 创建订单并在事务中完成库存扣减、订单快照保存和购物车清理。
+ 
   // 创建订单并在事务中完成库存扣减、订单快照保存和购物车清理。
   async create(userId: number, dto: { address?: Record<string, unknown>; remark?: string }) {
     const user = BigInt(userId)
@@ -99,7 +99,6 @@ export class OrderService {
   }
 
   // 查询当前用户的订单详情。
-  // 查询当前用户的订单详情。
   async detail(userId: number, id: number) {
     const order = await this.prisma.orders.findFirst({
       where: { id: BigInt(id), userId: BigInt(userId) },
@@ -133,11 +132,9 @@ export class OrderService {
   }
 
   // 确认收货并完成订单。
-  // 确认收货并完成订单。
   async complete(userId: number, id: number) {
     return this.changeStatus(userId, id, 'COMPLETED')
   }
-  // 取消订单并通过状态机校验当前状态。
   // 取消订单并通过状态机校验当前状态。
   async cancel(userId: number, id: number) {
     return this.changeStatus(userId, id, 'CANCELLED')
@@ -166,7 +163,6 @@ export class OrderService {
     return { id: Number(order.id), deleted: true }
   }
   // 创建退款申请并将订单转入退款审核状态。
-  // 创建退款申请并将订单转入退款审核状态。
   async refund(userId: number, id: number, reason: string) {
     const order = await this.getOwned(userId, id)
     assertOrderStatusTransition(order.status as OrderStatus, 'REFUNDING')
@@ -187,7 +183,7 @@ export class OrderService {
     return data
   }
 
-  // 创建售后申请，并保留用户提交的售后说明。
+ 
   // 创建售后申请，并保留用户提交的售后说明。
   async afterSale(userId: number, id: number, reason: string) {
     const order = await this.getOwned(userId, id)

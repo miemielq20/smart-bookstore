@@ -44,6 +44,8 @@ export interface LoginUserProfile {
   id: number
   username: string
   nickname: string
+  avatar: string
+  backgroundImage: string
   phone: string
   email: string
 }

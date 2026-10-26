@@ -18,6 +18,8 @@ export interface LoginUser {
   username: string
   groupId: number | null
   accountType?: 'admin' | 'user'
+  avatar?: string
+  backgroundImage?: string
 }
 
 export interface LoginData {

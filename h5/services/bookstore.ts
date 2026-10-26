@@ -13,6 +13,8 @@ import type {
   CategoryListResponse,
   CategoryOptionsResponse,
   CartResponse,
+  OrderListResponse,
+  OrderResponse,
 } from '../types/response'
 import type { OrderStatus } from '../types/order'
 import type { Address } from '../types/address'

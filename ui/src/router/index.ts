@@ -46,9 +46,8 @@ router.beforeEach(async (to) => {
   const routeStore = useRouterStore()
 
   if (!routeStore.routerReady) {
-    if (!menuStore.menus.length) {
-      await menuStore.initMenus()
-    }
+    // 即使 Pinia 恢复了本地菜单，也要在进入后台时同步服务端权限变更。
+    await menuStore.initMenus()
     const menus = await getMenusApi()
     const routes = transformMenuToRoutes(menus.data)
     routes.forEach((r) => router.addRoute('Layout', r))

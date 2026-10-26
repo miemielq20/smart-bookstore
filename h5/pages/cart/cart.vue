@@ -14,8 +14,12 @@
       </view>
       <view class="head-actions">
         <template v-if="editing">
-          <text class="head-action clean-action" @tap="removeSelected">批量清理</text>
-          <text class="head-action" @tap="exitEditing">退出管理</text>
+          <view class="head-icon-action clean-action" @tap="removeSelected">
+            <u-icon name="trash" color="#C66B3D" size="22" />
+          </view>
+          <view class="head-icon-action" @tap="exitEditing">
+            <u-icon name="checkmark" color="#24433B" size="24" />
+          </view>
         </template>
         <!-- 普通状态使用与首页、分类页统一的圆形功能图标入口。 -->
         <view v-else class="round-action manage-action" hover-class="tap-soft" @tap="toggleEditing">
@@ -68,7 +72,9 @@
             </view>
           </view>
         </view>
-        <u-icon v-if="!editing" name="trash" color="#9f9381" size="20" @click="remove(item.id)" />
+        <view v-if="!editing" class="item-delete" @tap="remove(item.id)">
+          <u-icon name="trash" color="#C66B3D" size="19" />
+        </view>
       </view>
     </view>
 
@@ -80,9 +86,18 @@
           </view>
           <text>全选</text>
         </view>
-        <u-button color="#C66B3D" plain text="分享" @click="shareSelected" />
-        <u-button color="#C66B3D" plain text="移入收藏" @click="favoriteSelected" />
-        <u-button color="#F13B4F" text="删除" @click="removeSelected" />
+        <view class="edit-icon-action" @tap="shareSelected">
+          <u-icon name="share" color="#C66B3D" size="21" />
+          <text>分享</text>
+        </view>
+        <view class="edit-icon-action" @tap="favoriteSelected">
+          <u-icon name="heart-fill" color="#C66B3D" size="21" />
+          <text>收藏</text>
+        </view>
+        <view class="edit-icon-action danger" @tap="removeSelected">
+          <u-icon name="trash" color="#C94F4F" size="21" />
+          <text>删除</text>
+        </view>
       </view>
       <template v-else>
         <view class="select-all" @tap="toggleAll">
@@ -314,7 +329,7 @@ function formatPrice(value: number | string | null) {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 0 28rpx calc(170rpx + env(safe-area-inset-bottom));
+  padding: 0 28rpx calc(190rpx + env(safe-area-inset-bottom));
   background: #f8f4ea;
   color: #2c2416;
 }
@@ -328,19 +343,23 @@ function formatPrice(value: number | string | null) {
 .head-actions {
   display: flex;
   align-items: center;
-  gap: 26rpx;
-  padding-bottom: 8rpx;
+  gap: 12rpx;
+  padding-bottom: 0;
 }
 
-.head-action {
-  color: #24433b;
-  font-size: 27rpx;
-  font-weight: 700;
-  white-space: nowrap;
+.head-icon-action {
+  display: flex;
+  width: 72rpx;
+  height: 72rpx;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 6rpx 16rpx rgba(44, 36, 22, 0.06);
 }
 
-.clean-action {
-  color: #c66b3d;
+.head-icon-action.clean-action {
+  background: #fff3ed;
 }
 
 .round-action {
@@ -391,6 +410,15 @@ function formatPrice(value: number | string | null) {
   padding: 22rpx 18rpx;
   border-radius: 24rpx;
   background: #fffdf7;
+}
+
+.item-delete {
+  display: flex;
+  width: 48rpx;
+  height: 48rpx;
+  flex: 0 0 48rpx;
+  align-items: center;
+  justify-content: center;
 }
 
 .check-mark {
@@ -514,15 +542,24 @@ function formatPrice(value: number | string | null) {
   display: flex;
   width: 100%;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
 }
 
-.edit-actions .u-button {
-  min-width: 0;
+.edit-icon-action {
+  display: flex;
+  min-width: 74rpx;
   flex: 1;
-  margin: 0;
-  padding: 0 8rpx;
-  font-size: 22rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rpx;
+  color: #c66b3d;
+  font-size: 18rpx;
+  line-height: 1;
+}
+
+.edit-icon-action.danger {
+  color: #c94f4f;
 }
 
 .bottom-select {

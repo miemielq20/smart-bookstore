@@ -14,7 +14,10 @@ const PASSWORD_SALT = 'sm_sys_salt_2026'
 
 /* ====== 密码工具函数 ====== */
 
-async function verifyPassword(input: string, storedHash: string): Promise<boolean> {
+async function verifyPassword(
+  input: string,
+  storedHash: string,
+): Promise<boolean> {
   const buf = (await scryptAsync(input, PASSWORD_SALT, 64)) as Buffer
   return buf.toString('hex') === storedHash
 }
@@ -56,12 +59,18 @@ export class AuthService {
     }
 
     if (dto.captcha && dto.captchaId) {
-      const valid = await this.captchaService.validate(dto.captchaId, dto.captcha)
+      const valid = await this.captchaService.validate(
+        dto.captchaId,
+        dto.captcha,
+      )
       if (!valid) throw new UnauthorizedException('验证码错误')
     }
 
     if (admin) {
-      await this.prisma.users.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+      await this.prisma.users.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+      })
     } else {
       await this.prisma.userAccounts.update({
         where: { id: user.id },
@@ -73,9 +82,13 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    if (dto.password !== dto.confirmPassword) throw new BadRequestException('两次输入的密码不一致')
+    if (dto.password !== dto.confirmPassword)
+      throw new BadRequestException('两次输入的密码不一致')
     const [admin, account] = await Promise.all([
-      this.prisma.users.findFirst({ where: { username: dto.username }, select: { id: true } }),
+      this.prisma.users.findFirst({
+        where: { username: dto.username },
+        select: { id: true },
+      }),
       this.prisma.userAccounts.findFirst({
         where: { username: dto.username },
         select: { id: true },
@@ -92,7 +105,10 @@ export class AuthService {
         nickname: dto.username,
       },
     })
-    return this.generateToken({ id: user.id, username: user.username, groupId: null }, 'user')
+    return this.generateToken(
+      { id: user.id, username: user.username, groupId: null },
+      'user',
+    )
   }
 
   // 按登录账号来源读取资料，兼容后台管理员和商城用户两套账号表。
@@ -100,20 +116,29 @@ export class AuthService {
     const row =
       accountType === 'admin'
         ? await this.prisma.users.findUnique({ where: { id: BigInt(userId) } })
-        : await this.prisma.userAccounts.findUnique({ where: { id: BigInt(userId) } })
+        : await this.prisma.userAccounts.findUnique({
+            where: { id: BigInt(userId) },
+          })
     if (!row) throw new UnauthorizedException('账号不存在')
     return {
       id: Number(row.id),
       username: row.username,
       nickname: row.nickname ?? '',
+      avatar: 'avatar' in row ? (row.avatar ?? '') : '',
+      backgroundImage:
+        'backgroundImage' in row ? (row.backgroundImage ?? '') : '',
       phone: row.phone ?? '',
       email: row.email ?? '',
     }
   }
 
   // 仅更新资料字段，避免账号页意外修改登录凭据或权限信息。
-  async updateProfile(userId: number, accountType: 'admin' | 'user' | undefined, dto: ProfileDto) {
-    const data = {
+  async updateProfile(
+    userId: number,
+    accountType: 'admin' | 'user' | undefined,
+    dto: ProfileDto,
+  ) {
+    const commonData = {
       nickname: dto.nickname ?? '',
       phone: dto.phone ?? '',
       email: dto.email ?? '',
@@ -121,12 +146,27 @@ export class AuthService {
     }
     const row =
       accountType === 'admin'
-        ? await this.prisma.users.update({ where: { id: BigInt(userId) }, data })
-        : await this.prisma.userAccounts.update({ where: { id: BigInt(userId) }, data })
+        ? await this.prisma.users.update({
+            where: { id: BigInt(userId) },
+            data: commonData,
+          })
+        : await this.prisma.userAccounts.update({
+            where: { id: BigInt(userId) },
+            data: {
+              ...commonData,
+              ...(dto.avatar !== undefined ? { avatar: dto.avatar } : {}),
+              ...(dto.backgroundImage !== undefined
+                ? { backgroundImage: dto.backgroundImage }
+                : {}),
+            },
+          })
     return {
       id: Number(row.id),
       username: row.username,
       nickname: row.nickname ?? '',
+      avatar: 'avatar' in row ? (row.avatar ?? '') : '',
+      backgroundImage:
+        'backgroundImage' in row ? (row.backgroundImage ?? '') : '',
       phone: row.phone ?? '',
       email: row.email ?? '',
     }
@@ -164,7 +204,9 @@ export class AuthService {
     const btnMap = new Map<number, { name: string; permissionCode: string }[]>()
     for (const b of buttons) {
       if (!btnMap.has(b.menuId)) btnMap.set(b.menuId, [])
-      btnMap.get(b.menuId)!.push({ name: b.name, permissionCode: b.permissionCode })
+      btnMap
+        .get(b.menuId)!
+        .push({ name: b.name, permissionCode: b.permissionCode })
     }
 
     // 6. 构建菜单节点

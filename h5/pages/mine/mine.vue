@@ -16,12 +16,22 @@
     </view>
 
     <view class="profile" @tap="openProfile">
-      <view class="profile-copy">
-        <text class="label">账号资料</text>
-        <text class="name">{{ userName }}</text>
-      </view>
-      <view class="profile-mark">
-        <u-icon name="account" color="#FFFDF7" size="27" />
+      <view class="profile-head">
+        <view class="profile-mark">
+          <image
+            v-if="user.avatar"
+            class="profile-avatar"
+            :src="normalizeAssetUrl(user.avatar)"
+            mode="aspectFill"
+          />
+          <u-icon v-else name="account" color="#FFFDF7" size="27" />
+        </view>
+        <view class="profile-copy">
+          <text class="label">账号资料</text>
+          <text class="name">{{ userName }}</text>
+          <text class="profile-link">查看并编辑资料</text>
+        </view>
+        <u-icon class="profile-arrow" name="arrow-right" color="#DCE7E0" size="18" />
       </view>
       <view class="stats">
         <view class="stat" @tap.stop="goOrders('SHIPPED')">
@@ -85,16 +95,6 @@
         </view>
         <u-icon name="arrow-right" color="#B7AA96" size="17" />
       </view>
-      <view class="setting-row" @tap="showAiTip">
-        <view class="setting-icon">
-          <u-icon name="star" color="#606C38" size="20" />
-        </view>
-        <view class="setting-copy">
-          <text>AI 推荐偏好</text>
-          <text>根据需求获取图书推荐</text>
-        </view>
-        <u-icon name="arrow-right" color="#B7AA96" size="17" />
-      </view>
       <view class="setting-row" @tap="showSettings">
         <view class="setting-icon">
           <u-icon name="setting" color="#606C38" size="20" />
@@ -112,19 +112,33 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import AppTabBar from '../../components/AppTabBar/AppTabBar.vue'
 import { getFavoritesApi, getOrdersApi } from '../../services/bookstore'
+import { normalizeAssetUrl } from '../../services/assets'
+import { hasLoginToken } from '../../services/auth'
 import type { Order } from '../../types/order'
 
 const theme = { page: '#F8F4EA' }
 const user = ref<{
   username?: string
   nickname?: string
+  avatar?: string
 }>({})
 const userName = computed(() => user.value.nickname || user.value.username || '登录后查看账户')
 const counts = ref({ receiving: 0, favorites: 0, refunding: 0 })
+
+onLoad(() => {
+  // 兼容直接打开个人中心的场景，未登录时不展示账号相关内容。
+  if (!hasLoginToken()) {
+    uni.redirectTo({
+      url: `/pages/login/login?redirect=${encodeURIComponent('/pages/mine/mine')}`,
+    })
+  }
+})
+
 onShow(() => {
+  if (!hasLoginToken()) return
   user.value = uni.getStorageSync('user') || {}
   loadCounts()
 })
@@ -167,9 +181,6 @@ function showSettings() {
   uni.navigateTo({ url: '/pages/settings/settings' })
 }
 
-function showAiTip() {
-  uni.navigateTo({ url: '/pages/ai/ai' })
-}
 </script>
 
 <style lang="scss" scoped>
@@ -218,31 +229,27 @@ function showAiTip() {
 }
 
 .profile {
-  position: relative;
-  min-height: 246rpx;
+  display: flex;
+  min-height: 276rpx;
+  flex-direction: column;
   margin-bottom: 30rpx;
-  padding: 30rpx;
-  overflow: hidden;
-  border-radius: 28rpx;
+  padding: 26rpx;
+  border-radius: 20rpx;
   background: #24433b;
   color: #fffdf7;
   box-shadow: 0 14rpx 28rpx rgba(36, 67, 59, 0.12);
 }
 
-.profile::after {
-  position: absolute;
-  right: -20rpx;
-  bottom: -42rpx;
-  width: 190rpx;
-  height: 190rpx;
-  border: 18rpx solid rgba(255, 253, 247, 0.1);
-  border-radius: 50%;
-  content: '';
+.profile-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
 }
 
 .profile-copy {
-  position: relative;
-  z-index: 1;
+  min-width: 0;
+  flex: 1;
+  margin-left: 20rpx;
 }
 
 .label {
@@ -253,40 +260,56 @@ function showAiTip() {
 
 .name {
   display: block;
-  margin-top: 9rpx;
+  margin-top: 4rpx;
+  overflow: hidden;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 40rpx;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-link {
+  display: block;
+  margin-top: 6rpx;
+  color: rgba(255, 253, 247, 0.58);
+  font-size: 19rpx;
 }
 
 .profile-mark {
-  position: absolute;
-  top: 28rpx;
-  right: 30rpx;
   display: flex;
-  width: 92rpx;
-  height: 92rpx;
+  width: 100rpx;
+  height: 100rpx;
+  flex: 0 0 100rpx;
   align-items: center;
   justify-content: center;
-  border-radius: 28rpx;
+  overflow: hidden;
+  border: 3rpx solid rgba(255, 253, 247, 0.76);
+  border-radius: 50%;
   background: #c66b3d;
-  box-shadow: inset 0 0 0 12rpx rgba(255, 253, 247, 0.18);
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.profile-arrow {
+  margin-left: 12rpx;
 }
 
 .stats {
-  position: absolute;
-  right: 30rpx;
-  bottom: 28rpx;
-  left: 30rpx;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12rpx;
+  gap: 14rpx;
+  margin-top: 24rpx;
 }
 
 .stat {
-  padding: 14rpx 8rpx;
-  border-radius: 17rpx;
-  background: rgba(255, 253, 247, 0.11);
+  padding: 16rpx 8rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 253, 247, 0.13);
   text-align: center;
 }
 

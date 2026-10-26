@@ -15,6 +15,8 @@ import { CartModule } from './cart/cart.module'
 import { OrderModule } from './order/order.module'
 import { AddressModule } from './address/address.module'
 import { FavoriteModule } from './favorite/favorite.module'
+import { AiModule } from './ai/ai.module'
+import { DashboardModule } from './dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { FavoriteModule } from './favorite/favorite.module'
     OrderModule,
     AddressModule,
     FavoriteModule,
+    AiModule,
+    DashboardModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

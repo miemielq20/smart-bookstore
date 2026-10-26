@@ -2,6 +2,8 @@ import type { GroupRow, MenuItem } from '../type/menu'
 import type { BannerItem } from './banner'
 import type { BookCategoryOption, BookDetail, BookItem } from './book'
 import type { CategoryItem, CategoryOption } from './category'
+import type { DashboardOverview, DashboardTraffic } from './dashboard'
+import type { AiConfig, AiTestResult } from './ai'
 
 //统一接口响应格式
 export interface ApiResponse<T = any> {
@@ -175,3 +177,7 @@ export type AdminOrderListApiResponse = ApiResponse<AdminOrderListResult>
 export type AdminOrderDetailApiResponse = ApiResponse<AdminOrderDetail>
 export type AdminRefundListApiResponse = ApiResponse<AdminRefundListResult>
 export type AdminOrderStatsApiResponse = ApiResponse<AdminOrderStats>
+export type DashboardOverviewApiResponse = ApiResponse<DashboardOverview>
+export type DashboardTrafficApiResponse = ApiResponse<DashboardTraffic>
+export type AiConfigApiResponse = ApiResponse<AiConfig>
+export type AiTestApiResponse = ApiResponse<AiTestResult>
