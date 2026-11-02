@@ -67,7 +67,6 @@ npm install
 
 cd ../h5
 npm install
-```
 
 ### 2. 初始化数据库
 
@@ -88,6 +87,7 @@ npx prisma generate
 ```bash
 npx prisma db seed
 ```
+
 ### 3. 启动服务端
 
 ```bash
